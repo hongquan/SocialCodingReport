@@ -1,0 +1,95 @@
+using Gtk 4.0;
+using Adw 1;
+using Gio 2.0;
+
+Gio.ListStore store {
+  item-type: typeof<$ActivityItem>;
+}
+
+Gtk.MultiSelection selection_model {
+  model: store;
+}
+
+template $ReportPage: Adw.Bin {
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      [end]
+      Button {
+        icon-name: "emblem-system-symbolic";
+        tooltip-text: "Preferences";
+        action-name: "win.preferences";
+      }
+    }
+
+    [top]
+    Gtk.Box {
+      orientation: horizontal;
+      spacing: 12;
+      margin-top: 6;
+      margin-bottom: 6;
+      margin-start: 12;
+      margin-end: 12;
+
+      ToggleButton btn_yesterday {
+        label: "Yesterday";
+        action-name: "report.filter";
+        action-target: "'yesterday'";
+      }
+
+      ToggleButton btn_today {
+        label: "Today";
+        group: btn_yesterday;
+        action-name: "report.filter";
+        action-target: "'today'";
+      }
+    }
+
+    content: Gtk.ScrolledWindow {
+      vexpand: true;
+
+      child: Gtk.ListView list_view {
+        model: selection_model;
+
+        factory: BuilderListItemFactory {
+          template ListItem {
+            child: Box {
+              orientation: horizontal;
+              spacing: 12;
+
+              CheckButton {
+                active: bind template.selected;
+              }
+
+              Label {
+                label: bind template.item as <$ActivityItem>.display_text;
+                use-markup: true;
+                xalign: 0;
+                hexpand: true;
+                ellipsize: end;
+              }
+            };
+          }
+        };
+      };
+    };
+
+    [bottom]
+    Gtk.Box {
+      margin-top: 12;
+      margin-bottom: 12;
+      margin-start: 12;
+      margin-end: 12;
+      halign: center;
+
+      Button btn_generate {
+        label: "Generate Report";
+        clicked => $on_generate();
+
+        styles [
+          "suggested-action",
+        ]
+      }
+    }
+  };
+}

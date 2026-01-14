@@ -1,0 +1,49 @@
+using Gtk 4.0;
+using Adw 1;
+using Gio 2.0;
+
+Gio.ListStore repo_store {
+  item-type: typeof<$RepoItem>;
+}
+
+Gtk.NoSelection repo_selection {
+  model: repo_store;
+}
+
+template $PreferencesPage: Adw.Bin {
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      [start]
+      Button {
+        icon-name: "go-previous-symbolic";
+        tooltip-text: "Back";
+        action-name: "win.back";
+      }
+    }
+
+    content: Adw.PreferencesPage {
+      Adw.PreferencesGroup {
+        title: "GitHub Repositories";
+        description: "Manage repositories to fetch activities from.\nFormat: owner/repo (e.g. google/guava)";
+
+        Adw.EntryRow entry_add_repo {
+          title: "Add Repository";
+          text: "";
+          show-apply-button: true;
+          apply => $on_add_repo();
+        }
+      }
+
+      Adw.PreferencesGroup repos_group {
+        Gtk.ListBox repos_list_box {
+          selection-mode: none;
+
+          styles [
+            "boxed-list",
+          ]
+        }
+      }
+    };
+  };
+}

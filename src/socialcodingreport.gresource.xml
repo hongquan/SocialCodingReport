@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/vn/ququ/SocialCodingReport">
+    <file preprocess="xml-stripblanks">gtk/window.ui</file>
+    <file preprocess="xml-stripblanks">gtk/report_page.ui</file>
+    <file preprocess="xml-stripblanks">gtk/preferences_page.ui</file>
+  </gresource>
+</gresources>
