@@ -23,7 +23,7 @@ log = Logger('ReportPage')
 class ReportPage(Adw.Bin):
     __gtype_name__ = 'ReportPage'
 
-    list_view: Gtk.ListView = Gtk.Template.Child()
+    activity_table: Gtk.ColumnView = Gtk.Template.Child()
     btn_generate: Gtk.Button = Gtk.Template.Child()
     btn_yesterday: Gtk.ToggleButton = Gtk.Template.Child()
     btn_today: Gtk.ToggleButton = Gtk.Template.Child()

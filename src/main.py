@@ -9,8 +9,8 @@ gi.require_version('Adw', '1')
 from gi.repository import Adw, Gio, GLib
 from logbook import Logger
 
-from .app_logging import GLibLogHandler
 from .consts import APP_ID
+from .logup import GLibLogHandler
 
 
 log = Logger(__name__)
@@ -19,6 +19,19 @@ log = Logger(__name__)
 class SocialCodingReportApplication(Adw.Application):
     def __init__(self):
         super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.FLAGS_NONE)
+
+    def define_shortcuts(self):
+        action_quit = Gio.SimpleAction.new('quit', None)
+        action_quit.connect('activate', self.on_quit)
+        self.add_action(action_quit)
+        self.set_accels_for_action('app.quit', ['<Control>q'])
+
+    def do_startup(self):
+        Adw.Application.do_startup(self)
+        self.define_shortcuts()
+
+    def on_quit(self, action, param):
+        self.quit()
 
     def do_activate(self):
         from .window import MainWindow

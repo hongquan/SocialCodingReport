@@ -32,6 +32,8 @@ class ActivityItem(GObject.Object):
     repo_name = GObject.Property(type=str)
     selected = GObject.Property(type=bool, default=True)
     display_text = GObject.Property(type=str)
+    short_repo_name = GObject.Property(type=str)
+    type_char = GObject.Property(type=str)
 
     def __init__(
         self,
@@ -50,6 +52,8 @@ class ActivityItem(GObject.Object):
         self.repo_name = repo_name
         self.selected = True
         self.display_text = f'<b>[{repo_name}]</b> {GLib.markup_escape_text(title)}'
+        self.short_repo_name = repo_name.split('/')[-1] if '/' in repo_name else repo_name
+        self.type_char = 'P' if type == 'PR' else 'I'
 
     @classmethod
     def from_activity_data(cls, data: ActivityData) -> Self:

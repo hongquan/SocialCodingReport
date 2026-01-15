@@ -33,7 +33,7 @@ python_sources = [
   'config.py',
   'github_client.py',
   'consts.py',
-  'app_logging.py',
+  'logup.py',
 ]
 
 install_data(python_sources, install_dir: moduledir)
@@ -54,4 +54,3 @@ configure_file(
   install_dir: get_option('bindir'),
   install_mode: 'rwxr-xr-x'
 )
-

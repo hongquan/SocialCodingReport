@@ -54,30 +54,61 @@ template $ReportPage: Adw.Bin {
     content: Gtk.Overlay {
       child: Gtk.ScrolledWindow {
         vexpand: true;
+        margin-start: 6;
+        margin-end: 6;
 
-        child: Gtk.ListView list_view {
+        child: Gtk.ColumnView activity_table {
           model: selection_model;
 
-          factory: BuilderListItemFactory {
-            template ListItem {
-              child: Box {
-                orientation: horizontal;
-                spacing: 12;
-
-                CheckButton {
+          Gtk.ColumnViewColumn {
+            factory: BuilderListItemFactory {
+              template ListItem {
+                child: CheckButton {
                   active: bind template.selected;
-                }
+                };
+              }
+            };
+          }
 
-                Label {
-                  label: bind template.item as <$ActivityItem>.display_text;
-                  use-markup: true;
+          Gtk.ColumnViewColumn {
+            title: "Repo";
+
+            factory: BuilderListItemFactory {
+              template ListItem {
+                child: Label {
+                  label: bind template.item as <$ActivityItem>.short_repo_name;
+                };
+              }
+            };
+          }
+
+          Gtk.ColumnViewColumn {
+            title: "Type";
+
+            factory: BuilderListItemFactory {
+              template ListItem {
+                child: Label {
+                  label: bind template.item as <$ActivityItem>.type_char;
+                };
+              }
+            };
+          }
+
+          Gtk.ColumnViewColumn {
+            title: "Title";
+            expand: true;
+
+            factory: BuilderListItemFactory {
+              template ListItem {
+                child: Label {
+                  label: bind template.item as <$ActivityItem>.title;
+                  use-markup: false;
                   xalign: 0;
-                  hexpand: true;
                   ellipsize: end;
-                }
-              };
-            }
-          };
+                };
+              }
+            };
+          }
         };
       };
 

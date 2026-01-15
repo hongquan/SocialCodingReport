@@ -84,11 +84,17 @@ However, you can still try running it in development by:
 ```console
 $ meson setup __build --prefix ~/.local/
 $ ninja -C __build
-$ meson install -C __build
+$ ninja -C __build install
 $ socialcodingreport
 ```
 
 These steps will install Social Coding Report to *~/.local/*. Everytime we modify source code, we only need to run the ``meson install ...`` step again.
+
+To enable debug log, do:
+
+```console
+$ G_MESSAGES_DEBUG=socialcodingreport socialcodingreport
+```
 
 To uninstall, do:
 
