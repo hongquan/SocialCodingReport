@@ -1,0 +1,49 @@
+from collections.abc import Sequence
+from dataclasses import dataclass
+
+from jinja2 import Environment, FileSystemLoader
+
+from .consts import ActivityAction, TaskType
+from .models import ActivityData
+
+
+@dataclass
+class ActivityGrouping:
+    repo_shortname: str
+    created_prs: list[ActivityData]
+    reviewed_prs: list[ActivityData]
+    created_issues: list[ActivityData]
+
+
+def group_activities_by_repo(activities: Sequence[ActivityData]) -> dict[str, ActivityGrouping]:
+    """
+    Group activities by:
+    - Repo shortname (without owner info)
+    - Created pull request
+    - Reviewed pull request
+    - Created issue
+    """
+    grouped = {}
+    for activity in activities:
+        if activity.repo_name not in grouped:
+            grouped[activity.repo_name] = ActivityGrouping(
+                repo_shortname=activity.repo_name.split('/')[-1],
+                created_prs=[],
+                reviewed_prs=[],
+                created_issues=[],
+            )
+        if activity.task_type == TaskType.PR:
+            if activity.action == ActivityAction.CREATED:
+                grouped[activity.repo_name].created_prs.append(activity)
+            elif activity.action == ActivityAction.REVIEWED:
+                grouped[activity.repo_name].reviewed_prs.append(activity)
+        elif activity.task_type == TaskType.ISSUE:
+            if activity.action == ActivityAction.CREATED:
+                grouped[activity.repo_name].created_issues.append(activity)
+
+
+def generate_report(activities: Sequence[ActivityData]) -> str:
+    env = Environment(loader=FileSystemLoader('data'))
+    template = env.get_template('report.html.jinja')
+    grouped = group_activities_by_repo(activities)
+    return template.render(grouped=grouped)

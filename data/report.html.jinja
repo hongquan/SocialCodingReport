@@ -1,0 +1,33 @@
+<h2>What did you do?</h2>
+<div>
+    {% for repo, group in grouped.items() %}
+    <h3>{{ group.repo_shortname }}</h3>
+    
+    {% if group.created_prs %}
+    <h4>Created Pull Requests</h4>
+    <ul>
+        {% for activity in group.created_prs %}
+        <li><a href="{{ activity.url }}">{{ activity.title }}</a></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if group.reviewed_prs %}
+    <h4>Reviewed Pull Requests</h4>
+    <ul>
+        {% for activity in group.reviewed_prs %}
+        <li><a href="{{ activity.url }}">{{ activity.title }}</a></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if group.created_issues %}
+    <h4>Created Issues</h4>
+    <ul>
+        {% for activity in group.created_issues %}
+        <li><a href="{{ activity.url }}">{{ activity.title }}</a></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endfor %}
+</div>

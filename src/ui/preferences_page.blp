@@ -6,8 +6,16 @@ Gio.ListStore repo_store {
   item-type: typeof<$RepoItem>;
 }
 
+Gio.ListStore account_store {
+  item-type: typeof<$AccountItem>;
+}
+
 Gtk.NoSelection repo_selection {
   model: repo_store;
+}
+
+Gtk.NoSelection account_selection {
+  model: account_store;
 }
 
 template $PreferencesPage: Adw.Bin {
@@ -23,6 +31,28 @@ template $PreferencesPage: Adw.Bin {
     }
 
     content: Adw.PreferencesPage {
+      Adw.PreferencesGroup {
+        title: "GitHub Accounts";
+        description: "Manage GitHub accounts.";
+
+        Adw.EntryRow entry_add_account {
+          title: "Add Account";
+          text: "";
+          show-apply-button: true;
+          apply => $on_add_account();
+        }
+      }
+
+      Adw.PreferencesGroup accounts_group {
+        Gtk.ListBox accounts_list_box {
+          selection-mode: none;
+
+          styles [
+            "boxed-list",
+          ]
+        }
+      }
+
       Adw.PreferencesGroup {
         title: "GitHub Repositories";
         description: "Manage repositories to fetch activities from.\nFormat: owner/repo (e.g. google/guava)";

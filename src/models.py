@@ -2,24 +2,70 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from enum import StrEnum
 from typing import Any, Self
 
 from gi.repository import GLib, GObject
 
+from .consts import ActivityAction, Host, TaskType
 
-class ActivityType(StrEnum):
-    ISSUE = 'Issue'
-    PR = 'PR'
+
+@dataclass
+class RepoInfo:
+    name: str
+    owner: str
+    host: Host = Host.GITHUB
+
+
+@dataclass
+class Account:
+    host: Host
+    username: str
 
 
 @dataclass
 class ActivityData:
     title: str
     url: str
-    type: ActivityType
+    task_type: TaskType
+    action: ActivityAction
     created_at: datetime
-    repo_name: str
+    repo_info: RepoInfo
+
+    @property
+    def repo_name(self) -> str:
+        return f'{self.repo_info.owner}/{self.repo_info.name}' if self.repo_info.owner else self.repo_info.name
+
+
+class RepoItem(GObject.Object):
+    __gtype_name__ = 'RepoItem'
+
+    name = GObject.Property(type=str)
+    owner = GObject.Property(type=str)
+    host = GObject.Property(type=str, default='github')
+    logo = GObject.Property(type=str, default='github')
+    is_loading = GObject.Property(type=bool, default=False)
+    display_name = GObject.Property(type=str)
+
+    def __init__(self, owner: str, name: str, host: Host = Host.GITHUB, logo: str = 'github', **kwargs: Any):
+        super().__init__(**kwargs)
+        self.owner = owner
+        self.name = name
+        self.host = host
+        self.logo = logo
+        self.is_loading = False
+        self.display_name = f'{owner}/{name}'
+
+
+class AccountItem(GObject.Object):
+    __gtype_name__ = 'AccountItem'
+
+    username = GObject.Property(type=str)
+    host = GObject.Property(type=str, default='github')
+
+    def __init__(self, username: str, host: Host = Host.GITHUB, **kwargs: Any):
+        super().__init__(**kwargs)
+        self.username = username
+        self.host = host
 
 
 class ActivityItem(GObject.Object):
@@ -27,7 +73,8 @@ class ActivityItem(GObject.Object):
 
     title = GObject.Property(type=str)
     url = GObject.Property(type=str)
-    type = GObject.Property(type=str)  # "issue" or "pr"
+    task_type = GObject.Property(type=str)  # "issue" or "pr"
+    action = GObject.Property(type=str)
     created_at = GObject.Property(type=object)
     repo_name = GObject.Property(type=str)
     selected = GObject.Property(type=bool, default=True)
@@ -39,7 +86,8 @@ class ActivityItem(GObject.Object):
         self,
         title: str,
         url: str,
-        type: str,
+        task_type: str,
+        action: str,
         created_at: datetime,
         repo_name: str,
         **kwargs: Any,
@@ -47,36 +95,22 @@ class ActivityItem(GObject.Object):
         super().__init__(**kwargs)
         self.title = title
         self.url = url
-        self.type = type
+        self.task_type = task_type
+        self.action = action
         self.created_at = created_at
         self.repo_name = repo_name
         self.selected = True
         self.display_text = f'<b>[{repo_name}]</b> {GLib.markup_escape_text(title)}'
         self.short_repo_name = repo_name.split('/')[-1] if '/' in repo_name else repo_name
-        self.type_char = 'P' if type == 'PR' else 'I'
+        self.type_char = 'P' if task_type == 'PR' else 'I'
 
     @classmethod
     def from_activity_data(cls, data: ActivityData) -> Self:
         return cls(
             title=data.title,
             url=data.url,
-            type=data.type,
+            task_type=data.task_type,
+            action=data.action,
             created_at=data.created_at,
             repo_name=data.repo_name,
         )
-
-
-class RepoItem(GObject.Object):
-    __gtype_name__ = 'RepoItem'
-
-    name = GObject.Property(type=str)
-    host = GObject.Property(type=str, default='github')
-    logo = GObject.Property(type=str, default='github')
-    is_loading = GObject.Property(type=bool, default=False)
-
-    def __init__(self, name: str, host: str = 'github', logo: str = 'github', **kwargs: Any):
-        super().__init__(**kwargs)
-        self.name = name
-        self.host = host
-        self.logo = logo
-        self.is_loading = False

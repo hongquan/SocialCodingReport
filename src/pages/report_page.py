@@ -12,8 +12,10 @@ from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 from logbook import Logger
 
 from ..config import ConfigManager
+from ..consts import ActivityAction, Host, TaskType
 from ..github_client import GitHubClient
-from ..models import ActivityData, ActivityItem, RepoItem
+from ..models import ActivityData, ActivityItem, RepoInfo, RepoItem
+from ..reporting import generate_report
 
 
 log = Logger('ReportPage')
@@ -78,15 +80,17 @@ class ReportPage(Adw.Bin):
 
         # Prepare repo store
         self.repo_store.remove_all()
-        for repo_name in repos:
-            self.repo_store.append(RepoItem(name=repo_name))
+        # Prepare repo store
+        self.repo_store.remove_all()
+        for repo_info in repos:
+            self.repo_store.append(RepoItem(owner=repo_info.owner, name=repo_info.name, host=repo_info.host))
 
         for i in range(self.repo_store.get_n_items()):
             repo_item = self.repo_store.get_item(i)
             repo_item.is_loading = True
 
             self.client.fetch_activities(
-                repo_item.name,
+                repo_item.display_name,
                 target_date,
             )
 
@@ -95,7 +99,7 @@ class ReportPage(Adw.Bin):
         repo_item = None
         for i in range(self.repo_store.get_n_items()):
             item = self.repo_store.get_item(i)
-            if item.name == repo_name:
+            if item.display_name == repo_name:
                 repo_item = item
                 break
 
@@ -127,15 +131,30 @@ class ReportPage(Adw.Bin):
             log.info('No items selected')
             return
 
-        html_parts = ['<ul>']
+        activities = []
         for item in selected_items:
-            # Title already contains markup if we used display_text, BUT the model has raw title.
-            # We want to escape for HTML export.
-            esc_title = GLib.markup_escape_text(item.title)
-            html_parts.append(f'<li><a href="{item.url}">[{item.repo_name}] {esc_title}</a></li>')
-        html_parts.append('</ul>')
+            # Reconstruct ActivityData
+            # We assume GitHub host for now or we could store it in ActivityItem if needed.
+            if '/' in item.repo_name:
+                owner, name = item.repo_name.split('/', 1)
+            else:
+                owner, name = '', item.repo_name
 
-        html_content = '\n'.join(html_parts)
+            repo_info = RepoInfo(name=name, owner=owner, host=Host.GITHUB)
+
+            activity = ActivityData(
+                title=item.title,
+                url=item.url,
+                task_type=TaskType(
+                    item.task_type
+                ),  # Convert string back to Enum? Or check if ActivityData expects Enum.
+                action=ActivityAction(item.action),
+                created_at=item.created_at,
+                repo_info=repo_info,
+            )
+            activities.append(activity)
+
+        html_content = generate_report(activities)
 
         clipboard = self.get_display().get_clipboard()
         content_provider = Gdk.ContentProvider.new_for_bytes('text/html', GLib.Bytes.new(html_content.encode('utf-8')))

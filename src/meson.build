@@ -34,6 +34,7 @@ python_sources = [
   'github_client.py',
   'consts.py',
   'logup.py',
+  'reporting.py',
 ]
 
 install_data(python_sources, install_dir: moduledir)

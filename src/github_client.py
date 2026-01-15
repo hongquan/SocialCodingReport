@@ -12,7 +12,8 @@ gi.require_version('Soup', '3.0')
 from gi.repository import Gio, GLib, GObject, Soup
 from logbook import Logger
 
-from .models import ActivityData, ActivityType
+from .consts import ActivityAction, Host, TaskType
+from .models import ActivityData, RepoInfo
 
 
 log = Logger(__name__)
@@ -28,20 +29,41 @@ class GitHubPullRequest(msgspec.Struct):
     html_url: str
 
 
+class GitHubUser(msgspec.Struct):
+    login: str | None = None
+
+
 class GitHubItem(msgspec.Struct):
     title: str
     html_url: str
     created_at: datetime
+    user: GitHubUser
     pull_request: GitHubPullRequest | None = None
 
-    def to_activity_data(self, repo_name: str) -> ActivityData:
-        type_enum = ActivityType.PR if self.pull_request is not None else ActivityType.ISSUE
+    def to_activity_data(self, repo_name: str, current_user: str | None = None) -> ActivityData:
+        type_enum = TaskType.PR if self.pull_request is not None else TaskType.ISSUE
+
+        # Determine action
+        if current_user and self.user.login and self.user.login == current_user:
+            action = ActivityAction.CREATED
+        else:
+            action = ActivityAction.REVIEWED
+
+        # Parse repo_name "owner/name"
+        if '/' in repo_name:
+            owner, name = repo_name.split('/', 1)
+        else:
+            owner, name = '', repo_name
+
+        repo_info = RepoInfo(name=name, owner=owner, host=Host.GITHUB)
+
         return ActivityData(
             title=self.title,
             url=self.html_url,
-            type=type_enum,
+            task_type=type_enum,
+            action=action,
             created_at=self.created_at,
-            repo_name=repo_name,
+            repo_info=repo_info,
         )
 
 
@@ -55,6 +77,29 @@ class GitHubClient(GObject.Object):
         self.session = Soup.Session.new()
         self.token = os.getenv('GITHUB_TOKEN')
         self.user_agent = 'SocialCodingReport/0.1'
+        self.current_user: str | None = None
+        self.fetch_user()
+
+    def fetch_user(self):
+        url = 'https://api.github.com/user'
+        msg = Soup.Message.new(HTTPMethod.GET, url)
+        msg.get_request_headers().append('User-Agent', self.user_agent)
+        if self.token:
+            msg.get_request_headers().append('Authorization', f'token {self.token}')
+
+        # We assume this finishes quickly.
+        # Ideally we wait for this before processing others, but for simplicity we rely on async.
+        self.session.send_and_read_async(msg, GLib.PRIORITY_DEFAULT, None, self.on_fetch_user_complete, None)
+
+    def on_fetch_user_complete(self, session, result, data):
+        try:
+            bytes_data = session.send_and_read_finish(result)
+            raw_data = bytes_data.get_data()
+            user_data = msgspec.json.decode(raw_data, type=GitHubUser)
+            self.current_user = user_data.login or 'Unknown'
+            log.info('Authenticated as: {}', self.current_user)
+        except (GLib.Error, msgspec.DecodeError) as e:
+            log.error('Error fetching user: {}', e)
 
     def fetch_activities(
         self,
@@ -114,6 +159,6 @@ class GitHubClient(GObject.Object):
             self.emit('repo-activities-fetched', repo_name, [], str(e))
             return
 
-        items = [item.to_activity_data(repo_name) for item in items_data]
+        items = [item.to_activity_data(repo_name, self.current_user) for item in items_data]
 
         self.emit('repo-activities-fetched', repo_name, items, '')
