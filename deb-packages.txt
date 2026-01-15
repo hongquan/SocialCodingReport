@@ -6,3 +6,4 @@ ninja-build
 blueprint-compiler
 python3-msgspec
 python3-logbook
+python3-tomli-w

@@ -19,7 +19,7 @@ class PreferencesPage(Adw.Bin):
     entry_add_repo: Adw.EntryRow = Gtk.Template.Child()
     repos_list_box: Gtk.ListBox = Gtk.Template.Child()
 
-    repo_store = Gio.ListStore(item_type=RepoItem)
+    repo_store: Gio.ListStore = Gtk.Template.Child()
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
