@@ -22,13 +22,13 @@ class PreferencesPage(Adw.Bin):
     entry_add_account: Adw.EntryRow = Gtk.Template.Child()
     accounts_list_box: Gtk.ListBox = Gtk.Template.Child()
 
-    repo_store: Gio.ListStore = Gtk.Template.Child()
-    account_store: Gio.ListStore = Gtk.Template.Child()
-
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
 
         self.config = ConfigManager()
+
+        self.repo_store = Gio.ListStore(item_type=RepoItem)
+        self.account_store = Gio.ListStore(item_type=AccountItem)
 
         # Setup actions
         action_group = Gio.SimpleActionGroup()
@@ -157,13 +157,6 @@ class PreferencesPage(Adw.Bin):
 
         # Remove from config
         repos = list(self.config.load_repositories())
-        # We need to find the matching RepoInfo to remove it
-        # Since RepoInfo is a dataclass, equality checking works on content
-        # But we constructed it with default host=GITHUB in UI adding.
-        # If user has different host in config, this removal logic based only on owner/name might be slightly fragile if we support multiple hosts fully later.
-        # But currently we only support adding GITHUB.
-        # Let's filter by owner/name.
-
         repos = [r for r in repos if not (r.owner == owner and r.name == name)]
         self.config.save_repositories(repos)
 

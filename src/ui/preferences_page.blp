@@ -1,22 +1,5 @@
 using Gtk 4.0;
 using Adw 1;
-using Gio 2.0;
-
-Gio.ListStore repo_store {
-  item-type: typeof<$RepoItem>;
-}
-
-Gio.ListStore account_store {
-  item-type: typeof<$AccountItem>;
-}
-
-Gtk.NoSelection repo_selection {
-  model: repo_store;
-}
-
-Gtk.NoSelection account_selection {
-  model: account_store;
-}
 
 template $PreferencesPage: Adw.Bin {
   child: Adw.ToolbarView {
