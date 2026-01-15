@@ -1,16 +1,23 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
+from enum import StrEnum
 from typing import Any, Self
 
-import msgspec
 from gi.repository import GLib, GObject
 
 
-class ActivityData(msgspec.Struct):
+class ActivityType(StrEnum):
+    ISSUE = 'Issue'
+    PR = 'PR'
+
+
+@dataclass
+class ActivityData:
     title: str
     url: str
-    type: str
+    type: ActivityType
     created_at: datetime
     repo_name: str
 

@@ -1,5 +1,4 @@
 import os
-from collections.abc import Callable, Sequence
 from datetime import datetime
 from http import HTTPMethod
 from urllib.parse import quote, urlencode
@@ -13,7 +12,7 @@ gi.require_version('Soup', '3.0')
 from gi.repository import Gio, GLib, GObject, Soup
 from logbook import Logger
 
-from .models import ActivityData
+from .models import ActivityData, ActivityType
 
 
 log = Logger(__name__)
@@ -35,8 +34,22 @@ class GitHubItem(msgspec.Struct):
     created_at: datetime
     pull_request: GitHubPullRequest | None = None
 
+    def to_activity_data(self, repo_name: str) -> ActivityData:
+        type_enum = ActivityType.PR if self.pull_request is not None else ActivityType.ISSUE
+        return ActivityData(
+            title=self.title,
+            url=self.html_url,
+            type=type_enum,
+            created_at=self.created_at,
+            repo_name=repo_name,
+        )
+
 
 class GitHubClient(GObject.Object):
+    __gsignals__ = {
+        'repo-activities-fetched': (GObject.SignalFlags.RUN_FIRST, None, (str, object, str)),
+    }
+
     def __init__(self):
         super().__init__()
         self.session = Soup.Session.new()
@@ -47,12 +60,11 @@ class GitHubClient(GObject.Object):
         self,
         repo_name: str,
         since_date: datetime,
-        callback: Callable[[Sequence[ActivityData], str | None], None],
     ):
         """
         Fetch issues and PRs updated since date.
         This is an async method wrapper.
-        callback(activity_list, error)
+        Emits 'repo-activities-fetched' (repo_name, activity_list, error_message)
         """
         # GitHub API ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ
         base_url = f'https://api.github.com/repos/{quote(repo_name)}/issues'
@@ -67,22 +79,21 @@ class GitHubClient(GObject.Object):
         if self.token:
             msg.get_request_headers().append('Authorization', f'token {self.token}')
 
+        log.info('Fetching activities for {} since {}', repo_name, since_date)
         self.session.send_and_read_async(
             msg,
             GLib.PRIORITY_DEFAULT,
             None,
             self.on_fetch_complete,
-            (callback, repo_name),
+            repo_name,
         )
-        log.info('Fetching activities for {} since {}', repo_name, since_date)
 
-    def on_fetch_complete(self, session: Soup.Session, result: Gio.AsyncResult, user_data: tuple[Callable, str]):
-        callback, repo_name = user_data
+    def on_fetch_complete(self, session: Soup.Session, result: Gio.AsyncResult, repo_name: str):
         try:
             bytes_data = session.send_and_read_finish(result)
         except GLib.Error as e:
             log.error('Network error during fetch: {}', e)
-            callback([], str(e))
+            self.emit('repo-activities-fetched', repo_name, [], str(e))
             return
 
         raw_data = bytes_data.get_data()
@@ -94,27 +105,15 @@ class GitHubClient(GObject.Object):
                 err_resp = msgspec.json.decode(raw_data, type=GitHubError)
                 error_message = err_resp.message or 'Unknown error'
                 log.error('GitHub API Error: {}', error_message)
-                callback([], f'GitHub API Error: {error_message}')
+                self.emit('repo-activities-fetched', repo_name, [], f'GitHub API Error: {error_message}')
                 return
 
             items_data = msgspec.json.decode(raw_data, type=tuple[GitHubItem, ...])
         except (msgspec.DecodeError, UnicodeDecodeError) as e:
             log.error('JSON decode error: {}', e)
-            callback([], str(e))
+            self.emit('repo-activities-fetched', repo_name, [], str(e))
             return
 
-        items = []
-        for item in items_data:
-            type_str = 'PR' if item.pull_request is not None else 'Issue'
+        items = [item.to_activity_data(repo_name) for item in items_data]
 
-            items.append(
-                ActivityData(
-                    title=item.title,
-                    url=item.html_url,
-                    type=type_str,
-                    created_at=item.created_at,
-                    repo_name=repo_name,
-                )
-            )
-
-        callback(items, None)
+        self.emit('repo-activities-fetched', repo_name, items, '')

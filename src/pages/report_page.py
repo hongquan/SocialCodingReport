@@ -35,6 +35,7 @@ class ReportPage(Adw.Bin):
         super().__init__(**kwargs)
 
         self.client = GitHubClient()
+        self.client.connect('repo-activities-fetched', self.on_activities_loaded)
         self.config = ConfigManager()
 
         # Actions
@@ -87,10 +88,17 @@ class ReportPage(Adw.Bin):
             self.client.fetch_activities(
                 repo_item.name,
                 target_date,
-                lambda items, error, item=repo_item: self.on_activities_loaded(items, error, repo_item=item),
             )
 
-    def on_activities_loaded(self, items: Sequence[ActivityData], error: str | None, repo_item: RepoItem | None = None):
+    def on_activities_loaded(self, client: GitHubClient, repo_name: str, items: Sequence[ActivityData], error: str):
+        # Find RepoItem
+        repo_item = None
+        for i in range(self.repo_store.get_n_items()):
+            item = self.repo_store.get_item(i)
+            if item.name == repo_name:
+                repo_item = item
+                break
+
         if repo_item:
             repo_item.is_loading = False
 
