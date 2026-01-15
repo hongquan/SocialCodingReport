@@ -36,7 +36,7 @@ class ReportPage(Adw.Bin):
         self.client = GitHubClient()
         self.config = ConfigManager()
 
-        self.btn_generate.connect('clicked', self.on_generate)
+
 
         # Actions
         self.action_group = Gio.SimpleActionGroup()
@@ -88,6 +88,7 @@ class ReportPage(Adw.Bin):
             item = ActivityItem.from_activity_data(item_data)
             self.store.append(item)
 
+    @Gtk.Template.Callback()
     def on_generate(self, btn: Gtk.Button):
         selected_items = []
         n_items = self.store.get_n_items()
