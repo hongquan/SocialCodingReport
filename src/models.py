@@ -59,7 +59,13 @@ class RepoItem(GObject.Object):
     __gtype_name__ = 'RepoItem'
 
     name = GObject.Property(type=str)
+    host = GObject.Property(type=str, default='github')
+    logo = GObject.Property(type=str, default='github')
+    is_loading = GObject.Property(type=bool, default=False)
 
-    def __init__(self, name: str, **kwargs: Any):
+    def __init__(self, name: str, host: str = 'github', logo: str = 'github', **kwargs: Any):
         super().__init__(**kwargs)
         self.name = name
+        self.host = host
+        self.logo = logo
+        self.is_loading = False

@@ -2,12 +2,12 @@ using Gtk 4.0;
 using Adw 1;
 using Gio 2.0;
 
-Gio.ListStore store {
+Gio.ListStore activity_store {
   item-type: typeof<$ActivityItem>;
 }
 
 Gtk.MultiSelection selection_model {
-  model: store;
+  model: activity_store;
 }
 
 template $ReportPage: Adw.Bin {
@@ -43,35 +43,58 @@ template $ReportPage: Adw.Bin {
         action-name: "report.filter";
         action-target: "'today'";
       }
+
+      Button {
+        icon-name: "view-refresh-symbolic";
+        tooltip-text: "Refresh";
+        clicked => $on_refresh();
+      }
     }
 
-    content: Gtk.ScrolledWindow {
-      vexpand: true;
+    content: Gtk.Overlay {
+      child: Gtk.ScrolledWindow {
+        vexpand: true;
 
-      child: Gtk.ListView list_view {
-        model: selection_model;
+        child: Gtk.ListView list_view {
+          model: selection_model;
 
-        factory: BuilderListItemFactory {
-          template ListItem {
-            child: Box {
-              orientation: horizontal;
-              spacing: 12;
+          factory: BuilderListItemFactory {
+            template ListItem {
+              child: Box {
+                orientation: horizontal;
+                spacing: 12;
 
-              CheckButton {
-                active: bind template.selected;
-              }
+                CheckButton {
+                  active: bind template.selected;
+                }
 
-              Label {
-                label: bind template.item as <$ActivityItem>.display_text;
-                use-markup: true;
-                xalign: 0;
-                hexpand: true;
-                ellipsize: end;
-              }
-            };
-          }
+                Label {
+                  label: bind template.item as <$ActivityItem>.display_text;
+                  use-markup: true;
+                  xalign: 0;
+                  hexpand: true;
+                  ellipsize: end;
+                }
+              };
+            }
+          };
         };
       };
+
+      [overlay]
+      Gtk.Spinner loading_spinner {
+        halign: center;
+        valign: center;
+        width-request: 48;
+        height-request: 48;
+
+        styles [
+          "large",
+        ]
+
+        visible: bind $is_loading() as <bool>;
+        spinning: bind $is_loading() as <bool>;
+      }
     };
 
     [bottom]

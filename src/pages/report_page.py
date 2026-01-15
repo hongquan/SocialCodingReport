@@ -13,7 +13,7 @@ from logbook import Logger
 
 from ..config import ConfigManager
 from ..github_client import GitHubClient
-from ..models import ActivityData, ActivityItem
+from ..models import ActivityData, ActivityItem, RepoItem
 
 
 log = Logger('ReportPage')
@@ -27,16 +27,15 @@ class ReportPage(Adw.Bin):
     btn_generate: Gtk.Button = Gtk.Template.Child()
     btn_yesterday: Gtk.ToggleButton = Gtk.Template.Child()
     btn_today: Gtk.ToggleButton = Gtk.Template.Child()
-    store: Gio.ListStore = Gtk.Template.Child()
+    activity_store: Gio.ListStore = Gtk.Template.Child()
     selection_model: Gtk.MultiSelection = Gtk.Template.Child()
+    repo_store = Gio.ListStore(item_type=RepoItem)
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
 
         self.client = GitHubClient()
         self.config = ConfigManager()
-
-
 
         # Actions
         self.action_group = Gio.SimpleActionGroup()
@@ -69,32 +68,51 @@ class ReportPage(Adw.Bin):
             target_date = today_start
 
         # Clear current
-        self.store.remove_all()
+        self.activity_store.remove_all()
 
         repos = self.config.load_repositories()
         if not repos:
             log.info('No repositories configured.')
             return
 
-        for repo in repos:
-            self.client.fetch_activities(repo, target_date, self.on_activities_loaded)
+        # Prepare repo store
+        self.repo_store.remove_all()
+        for repo_name in repos:
+            self.repo_store.append(RepoItem(name=repo_name))
 
-    def on_activities_loaded(self, items: Sequence[ActivityData], error: str | None):
+        for i in range(self.repo_store.get_n_items()):
+            repo_item = self.repo_store.get_item(i)
+            repo_item.is_loading = True
+
+            self.client.fetch_activities(
+                repo_item.name,
+                target_date,
+                lambda items, error, item=repo_item: self.on_activities_loaded(items, error, repo_item=item),
+            )
+
+    def on_activities_loaded(self, items: Sequence[ActivityData], error: str | None, repo_item: RepoItem | None = None):
+        if repo_item:
+            repo_item.is_loading = False
+
         if error:
             log.error('Error loading data: {}', error)
             return
 
         for item_data in items:
             item = ActivityItem.from_activity_data(item_data)
-            self.store.append(item)
+            self.activity_store.append(item)
+
+    @Gtk.Template.Callback()
+    def on_refresh(self, btn: Gtk.Button):
+        self.load_data()
 
     @Gtk.Template.Callback()
     def on_generate(self, btn: Gtk.Button):
         selected_items = []
-        n_items = self.store.get_n_items()
+        n_items = self.activity_store.get_n_items()
         for i in range(n_items):
             if self.selection_model.is_selected(i):
-                item = self.store.get_item(i)
+                item = self.activity_store.get_item(i)
                 selected_items.append(item)
 
         if not selected_items:
@@ -116,3 +134,11 @@ class ReportPage(Adw.Bin):
         clipboard.set_content(content_provider)
 
         log.info('Report copied to clipboard.')
+
+    @Gtk.Template.Callback()
+    def is_loading(self, *args) -> bool:
+        for i in range(self.repo_store.get_n_items()):
+            item = self.repo_store.get_item(i)
+            if item.is_loading:
+                return True
+        return False

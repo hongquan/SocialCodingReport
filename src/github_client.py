@@ -40,7 +40,7 @@ class GitHubClient(GObject.Object):
     def __init__(self):
         super().__init__()
         self.session = Soup.Session.new()
-        self.token = os.environ.get('GITHUB_TOKEN')
+        self.token = os.getenv('GITHUB_TOKEN')
         self.user_agent = 'SocialCodingReport/0.1'
 
     def fetch_activities(
@@ -74,6 +74,7 @@ class GitHubClient(GObject.Object):
             self.on_fetch_complete,
             (callback, repo_name),
         )
+        log.info('Fetching activities for {} since {}', repo_name, since_date)
 
     def on_fetch_complete(self, session: Soup.Session, result: Gio.AsyncResult, user_data: tuple[Callable, str]):
         callback, repo_name = user_data
