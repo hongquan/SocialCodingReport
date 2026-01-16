@@ -95,6 +95,18 @@ template $ReportPage: Adw.Bin {
           }
 
           Gtk.ColumnViewColumn {
+            title: "Author";
+
+            factory: BuilderListItemFactory {
+              template ListItem {
+                child: Label {
+                  label: bind template.item as <$ActivityItem>.author;
+                };
+              }
+            };
+          }
+
+          Gtk.ColumnViewColumn {
             title: "Title";
             expand: true;
 

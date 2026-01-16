@@ -23,17 +23,22 @@ class Account:
 
 
 @dataclass
-class ActivityData:
+class InvolvementActivity:
     title: str
     url: str
     task_type: TaskType
-    action: ActivityAction
+    author: str
     created_at: datetime
     repo_info: RepoInfo
 
     @property
     def repo_name(self) -> str:
         return f'{self.repo_info.owner}/{self.repo_info.name}' if self.repo_info.owner else self.repo_info.name
+
+
+@dataclass
+class ReportActivity(InvolvementActivity):
+    action: ActivityAction
 
 
 class RepoItem(GObject.Object):
@@ -81,6 +86,7 @@ class ActivityItem(GObject.Object):
     display_text = GObject.Property(type=str)
     short_repo_name = GObject.Property(type=str)
     type_char = GObject.Property(type=str)
+    author = GObject.Property(type=str)
 
     def __init__(
         self,
@@ -90,6 +96,7 @@ class ActivityItem(GObject.Object):
         action: str,
         created_at: datetime,
         repo_name: str,
+        author: str = '',
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
@@ -99,18 +106,25 @@ class ActivityItem(GObject.Object):
         self.action = action
         self.created_at = created_at
         self.repo_name = repo_name
+        self.author = author
         self.selected = True
         self.display_text = f'<b>[{repo_name}]</b> {GLib.markup_escape_text(title)}'
         self.short_repo_name = repo_name.split('/')[-1] if '/' in repo_name else repo_name
         self.type_char = 'P' if task_type == 'PR' else 'I'
 
     @classmethod
-    def from_activity_data(cls, data: ActivityData) -> Self:
+    def from_activity_data(cls, data: InvolvementActivity, viewing_username: str) -> Self:
+        if data.author == viewing_username:
+            action = ActivityAction.CREATED
+        else:
+            action = ActivityAction.REVIEWED
+
         return cls(
             title=data.title,
             url=data.url,
             task_type=data.task_type,
-            action=data.action,
+            action=action,
             created_at=data.created_at,
             repo_name=data.repo_name,
+            author=data.author,
         )

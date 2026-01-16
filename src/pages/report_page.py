@@ -14,7 +14,7 @@ from logbook import Logger
 from ..config import ConfigManager
 from ..consts import ActivityAction, Host, TaskType
 from ..github_client import GitHubClient
-from ..models import ActivityData, ActivityItem, RepoInfo, RepoItem
+from ..models import ActivityItem, InvolvementActivity, RepoInfo, RepoItem, ReportActivity
 from ..reporting import generate_report
 
 
@@ -80,13 +80,19 @@ class ReportPage(Adw.Bin):
 
         # Prepare repo store
         self.repo_store.remove_all()
-        # Prepare repo store
-        self.repo_store.remove_all()
+
         for repo_info in repos:
             self.repo_store.append(RepoItem(owner=repo_info.owner, name=repo_info.name, host=repo_info.host))
 
-        for i in range(self.repo_store.get_n_items()):
-            repo_item = self.repo_store.get_item(i)
+        # Get GitHub username
+        accounts = self.config.load_accounts()
+        github_username = next((a.username for a in accounts if a.host == Host.GITHUB), None)
+
+        if not github_username:
+            log.error('No GitHub account configured.')
+            return
+
+        for repo_item in self.repo_store:
             repo_item.is_loading = True
 
             self.client.fetch_activities(
@@ -94,11 +100,12 @@ class ReportPage(Adw.Bin):
                 target_date,
             )
 
-    def on_activities_loaded(self, client: GitHubClient, repo_name: str, items: Sequence[ActivityData], error: str):
+    def on_activities_loaded(
+        self, client: GitHubClient, repo_name: str, items: Sequence[InvolvementActivity], error: str
+    ):
         # Find RepoItem
         repo_item = None
-        for i in range(self.repo_store.get_n_items()):
-            item = self.repo_store.get_item(i)
+        for item in self.repo_store:
             if item.display_name == repo_name:
                 repo_item = item
                 break
@@ -110,8 +117,33 @@ class ReportPage(Adw.Bin):
             log.error('Error loading data: {}', error)
             return
 
+        # Get GitHub username
+        accounts = self.config.load_accounts()
+        github_username = next((a.username for a in accounts if a.host == Host.GITHUB), None)
+
+        if not github_username:
+            log.warn('No GitHub account configured, skipping activities.')
+            return
+
         for item_data in items:
-            item = ActivityItem.from_activity_data(item_data)
+            # Determine action locally
+            if item_data.author == github_username:
+                action = ActivityAction.CREATED
+            else:
+                action = ActivityAction.REVIEWED
+
+            # We only care about:
+            # - Created PR
+            # - Reviewed PR
+            # - Created Issue
+            is_created_pr = action == ActivityAction.CREATED and item_data.task_type == TaskType.PR
+            is_reviewed_pr = action == ActivityAction.REVIEWED and item_data.task_type == TaskType.PR
+            is_created_issue = action == ActivityAction.CREATED and item_data.task_type == TaskType.ISSUE
+
+            if not (is_created_pr or is_reviewed_pr or is_created_issue):
+                continue
+
+            item = ActivityItem.from_activity_data(item_data, github_username)
             self.activity_store.append(item)
 
     @Gtk.Template.Callback()
@@ -142,15 +174,16 @@ class ReportPage(Adw.Bin):
 
             repo_info = RepoInfo(name=name, owner=owner, host=Host.GITHUB)
 
-            activity = ActivityData(
+            activity = ReportActivity(
                 title=item.title,
                 url=item.url,
                 task_type=TaskType(
                     item.task_type
                 ),  # Convert string back to Enum? Or check if ActivityData expects Enum.
-                action=ActivityAction(item.action),
                 created_at=item.created_at,
                 repo_info=repo_info,
+                author=item.author,
+                action=ActivityAction(item.action),
             )
             activities.append(activity)
 
@@ -164,8 +197,7 @@ class ReportPage(Adw.Bin):
 
     @Gtk.Template.Callback()
     def is_loading(self, *args) -> bool:
-        for i in range(self.repo_store.get_n_items()):
-            item = self.repo_store.get_item(i)
+        for item in self.repo_store:
             if item.is_loading:
                 return True
         return False
