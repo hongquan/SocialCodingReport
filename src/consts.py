@@ -25,3 +25,10 @@ class TaskType(StrEnum):
 class ActivityAction(StrEnum):
     CREATED = 'Created'
     REVIEWED = 'Reviewed'
+
+
+class GitHubEventType(StrEnum):
+    PULL_REQUEST = 'PullRequestEvent'
+    PULL_REQUEST_REVIEW = 'PullRequestReviewEvent'
+    ISSUE = 'IssuesEvent'
+    ISSUE_COMMENT = 'IssueCommentEvent'

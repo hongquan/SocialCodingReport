@@ -14,7 +14,7 @@ from logbook import Logger
 from ..config import ConfigManager
 from ..consts import ActivityAction, Host, TaskType
 from ..github_client import GitHubClient
-from ..models import ActivityItem, InvolvementActivity, RepoInfo, RepoItem, ReportActivity
+from ..models import ActivityData, ActivityItem, RepoInfo, RepoItem, ReportActivity
 from ..reporting import generate_report
 
 
@@ -37,7 +37,7 @@ class ReportPage(Adw.Bin):
         super().__init__(**kwargs)
 
         self.client = GitHubClient()
-        self.client.connect('repo-activities-fetched', self.on_activities_loaded)
+        self.client.connect('user-activities-fetched', self.on_activities_loaded)
         self.config = ConfigManager()
 
         # Actions
@@ -66,9 +66,9 @@ class ReportPage(Adw.Bin):
         state = self.action_group.get_action_state('filter').get_string()
 
         if state == 'yesterday':
-            target_date = today_start - timedelta(days=1)
+            since_date = today_start - timedelta(days=1)
         else:
-            target_date = today_start
+            since_date = today_start
 
         # Clear current
         self.activity_store.remove_all()
@@ -80,9 +80,10 @@ class ReportPage(Adw.Bin):
 
         # Prepare repo store
         self.repo_store.remove_all()
-
         for repo_info in repos:
-            self.repo_store.append(RepoItem(owner=repo_info.owner, name=repo_info.name, host=repo_info.host))
+            repo_item = RepoItem(name=repo_info.name, owner=repo_info.owner)
+            repo_item.is_loading = True
+            self.repo_store.append(repo_item)
 
         # Get GitHub username
         accounts = self.config.load_accounts()
@@ -90,61 +91,37 @@ class ReportPage(Adw.Bin):
 
         if not github_username:
             log.error('No GitHub account configured.')
+            # Clear loading state
+            for i in range(self.repo_store.get_n_items()):
+                self.repo_store.get_item(i).is_loading = False
             return
 
-        for repo_item in self.repo_store:
-            repo_item.is_loading = True
+        self.client.fetch_user_events(github_username, since_date)
 
-            self.client.fetch_activities(
-                repo_item.display_name,
-                target_date,
-            )
-
-    def on_activities_loaded(
-        self, client: GitHubClient, repo_name: str, items: Sequence[InvolvementActivity], error: str
-    ):
-        # Find RepoItem
-        repo_item = None
-        for item in self.repo_store:
-            if item.display_name == repo_name:
-                repo_item = item
-                break
-
-        if repo_item:
+    def on_activities_loaded(self, client: GitHubClient, username: str, items: Sequence[ActivityData], error: str):
+        # Clear loading state for ALL repos
+        for i in range(self.repo_store.get_n_items()):
+            repo_item = self.repo_store.get_item(i)
             repo_item.is_loading = False
 
         if error:
             log.error('Error loading data: {}', error)
             return
 
-        # Get GitHub username
-        accounts = self.config.load_accounts()
-        github_username = next((a.username for a in accounts if a.host == Host.GITHUB), None)
+        # Filter items based on configured repos
+        configured_repos = set()
+        for i in range(self.repo_store.get_n_items()):
+            configured_repos.add(self.repo_store.get_item(i).name)
 
-        if not github_username:
-            log.warn('No GitHub account configured, skipping activities.')
-            return
+        count = 0
+        for item in items:
+            if item.repo_name in configured_repos:
+                # We can now create ActivityItem directly
+                item_obj = ActivityItem.from_activity_data(item)
+                self.activity_store.append(item_obj)
+                count += 1
 
-        for item_data in items:
-            # Determine action locally
-            if item_data.author == github_username:
-                action = ActivityAction.CREATED
-            else:
-                action = ActivityAction.REVIEWED
-
-            # We only care about:
-            # - Created PR
-            # - Reviewed PR
-            # - Created Issue
-            is_created_pr = action == ActivityAction.CREATED and item_data.task_type == TaskType.PR
-            is_reviewed_pr = action == ActivityAction.REVIEWED and item_data.task_type == TaskType.PR
-            is_created_issue = action == ActivityAction.CREATED and item_data.task_type == TaskType.ISSUE
-
-            if not (is_created_pr or is_reviewed_pr or is_created_issue):
-                continue
-
-            item = ActivityItem.from_activity_data(item_data, github_username)
-            self.activity_store.append(item)
+        log.info('Loaded {} activities for user {}', count, username)
 
     @Gtk.Template.Callback()
     def on_refresh(self, btn: Gtk.Button):

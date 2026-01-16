@@ -2,11 +2,26 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
+from enum import StrEnum
 from typing import Any, Self
 
 from gi.repository import GLib, GObject
 
 from .consts import ActivityAction, Host, TaskType
+
+
+class ActivityType(StrEnum):
+    ISSUE = 'Issue'
+    PR = 'PR'
+
+
+@dataclass
+class ActivityData:
+    title: str
+    url: str
+    type: ActivityType
+    created_at: datetime
+    repo_name: str
 
 
 @dataclass
@@ -51,14 +66,17 @@ class RepoItem(GObject.Object):
     is_loading = GObject.Property(type=bool, default=False)
     display_name = GObject.Property(type=str)
 
-    def __init__(self, owner: str, name: str, host: Host = Host.GITHUB, logo: str = 'github', **kwargs: Any):
+    def __init__(self, name: str, owner: str = '', host: Host = Host.GITHUB, logo: str = 'github', **kwargs: Any):
         super().__init__(**kwargs)
+        if not owner and '/' in name:
+            owner, name = name.split('/', 1)
+
         self.owner = owner
         self.name = name
         self.host = host
         self.logo = logo
         self.is_loading = False
-        self.display_name = f'{owner}/{name}'
+        self.display_name = f'{owner}/{name}' if owner else name
 
 
 class AccountItem(GObject.Object):
@@ -113,18 +131,13 @@ class ActivityItem(GObject.Object):
         self.type_char = 'P' if task_type == 'PR' else 'I'
 
     @classmethod
-    def from_activity_data(cls, data: InvolvementActivity, viewing_username: str) -> Self:
-        if data.author == viewing_username:
-            action = ActivityAction.CREATED
-        else:
-            action = ActivityAction.REVIEWED
-
+    def from_activity_data(cls, data: ActivityData) -> Self:
         return cls(
             title=data.title,
             url=data.url,
-            task_type=data.task_type,
-            action=action,
+            task_type=str(data.type),
+            action='',  # Action is arguably captured in title now
             created_at=data.created_at,
             repo_name=data.repo_name,
-            author=data.author,
+            author='',  # We don't have author in ActivityData yet
         )
