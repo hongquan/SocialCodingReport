@@ -27,6 +27,7 @@ class ReportPage(Adw.Bin):
     __gtype_name__ = 'ReportPage'
 
     date_named_range = GObject.Property(type=str, default=DateNamedRange.YESTERDAY.value)
+    is_loading = GObject.Property(type=bool, default=False)
     activity_table: Gtk.ColumnView = Gtk.Template.Child()
     btn_generate: Gtk.Button = Gtk.Template.Child()
     btn_yesterday: Gtk.ToggleButton = Gtk.Template.Child()
@@ -51,6 +52,7 @@ class ReportPage(Adw.Bin):
 
     @Gtk.Template.Callback()
     def load_data(self, ytd_btn: Gtk.ToggleButton | None = None):
+        self.is_loading = True
         # Get filter state
         if ytd_btn is not None:
             if ytd_btn.get_active():
@@ -84,7 +86,6 @@ class ReportPage(Adw.Bin):
         self.repo_store.remove_all()
         for repo_info in repos:
             repo_item = RepoItem(name=repo_info.name, owner=repo_info.owner)
-            repo_item.is_loading = True
             self.repo_store.append(repo_item)
 
         # Get GitHub username
@@ -94,16 +95,14 @@ class ReportPage(Adw.Bin):
         if not github_username:
             log.error('No GitHub account configured.')
             # Clear loading state
-            for rp in self.repo_store:
-                rp.is_loading = False
+            self.is_loading = False
             return
 
         self.client.fetch_user_events(github_username, since_date, until_date)
 
     def on_activities_loaded(self, client: GitHubClient, username: str, activities: Sequence[InvolvementActivity], error: str):
         # Clear loading state for ALL repos
-        for rp in self.repo_store:
-            rp.is_loading = False
+        self.is_loading = False
 
         if error:
             log.error('Error loading data: {}', error)
@@ -169,10 +168,3 @@ class ReportPage(Adw.Bin):
         clipboard.set_content(content_provider)
 
         log.info('Report copied to clipboard.')
-
-    @Gtk.Template.Callback()
-    def is_loading(self, *args) -> bool:
-        for item in self.repo_store:
-            if item.is_loading:
-                return True
-        return False

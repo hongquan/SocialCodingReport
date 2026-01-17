@@ -133,8 +133,8 @@ template $ReportPage: Adw.Bin {
           "large",
         ]
 
-        visible: bind $is_loading() as <bool>;
-        spinning: bind $is_loading() as <bool>;
+        visible: bind template.is_loading;
+        spinning: bind template.is_loading;
       }
     };
 
