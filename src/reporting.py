@@ -25,21 +25,21 @@ def group_activities_by_repo(activities: Sequence[ReportActivity]) -> dict[str, 
     """
     grouped = {}
     for activity in activities:
-        if activity.repo_name not in grouped:
-            grouped[activity.repo_name] = ActivityGrouping(
-                repo_shortname=activity.repo_name.split('/')[-1],
+        if activity.repo_long_name not in grouped:
+            grouped[activity.repo_long_name] = ActivityGrouping(
+                repo_shortname=activity.repo_long_name.split('/')[-1],
                 created_prs=[],
                 reviewed_prs=[],
                 created_issues=[],
             )
         if activity.task_type == TaskType.PR:
             if activity.action == ActivityAction.CREATED:
-                grouped[activity.repo_name].created_prs.append(activity)
+                grouped[activity.repo_long_name].created_prs.append(activity)
             elif activity.action == ActivityAction.REVIEWED:
-                grouped[activity.repo_name].reviewed_prs.append(activity)
+                grouped[activity.repo_long_name].reviewed_prs.append(activity)
         elif activity.task_type == TaskType.ISSUE:
             if activity.action == ActivityAction.CREATED:
-                grouped[activity.repo_name].created_issues.append(activity)
+                grouped[activity.repo_long_name].created_issues.append(activity)
 
 
 def generate_report(activities: Sequence[ReportActivity]) -> str:

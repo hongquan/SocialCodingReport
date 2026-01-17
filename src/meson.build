@@ -34,6 +34,7 @@ python_sources = [
   'github_client.py',
   'consts.py',
   'logup.py',
+  'schemas.py',
   'reporting.py',
 ]
 

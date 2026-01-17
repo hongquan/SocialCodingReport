@@ -5,23 +5,16 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Any, Self
 
-from gi.repository import GLib, GObject
+from gi.repository import GObject
 
 from .consts import ActivityAction, Host, TaskType
+from .schemas import GHIssuesEvent, GHPullRequestEvent, GHPullRequestReviewEvent
 
 
 class ActivityType(StrEnum):
     ISSUE = 'Issue'
     PR = 'PR'
 
-
-@dataclass
-class ActivityData:
-    title: str
-    url: str
-    type: ActivityType
-    created_at: datetime
-    repo_name: str
 
 
 @dataclass
@@ -40,20 +33,62 @@ class Account:
 @dataclass
 class InvolvementActivity:
     title: str
-    url: str
+    api_url: str
+    html_url: str
     task_type: TaskType
+    action: ActivityAction
     author: str
     created_at: datetime
     repo_info: RepoInfo
 
     @property
-    def repo_name(self) -> str:
+    def repo_long_name(self) -> str:
         return f'{self.repo_info.owner}/{self.repo_info.name}' if self.repo_info.owner else self.repo_info.name
+
+    @classmethod
+    def from_github_event(cls, event: GHIssuesEvent | GHPullRequestEvent | GHPullRequestReviewEvent) -> Self:
+        match event:
+            case GHPullRequestEvent(payload=p):
+                task_type = TaskType.PR
+                action =  ActivityAction.CREATED_PR
+                # This payload doesn't have title directly, so we set empty for now.
+                title = ''
+                api_url = p.pull_request.url
+                html_url = p.pull_request.html_url
+            case GHPullRequestReviewEvent(payload=p):
+                task_type = TaskType.PR
+                action = ActivityAction.REVIEWED_PR
+                # This payload doesn't have title directly, so we set empty for now.
+                title = ''
+                api_url = p.pull_request.url
+                html_url = p.pull_request.html_url
+            case GHIssuesEvent(payload=p):
+                task_type = TaskType.ISSUE
+                action = ActivityAction.CREATED_ISSUE if p.action == 'opened' else ActivityAction.UPDATED_ISSUE
+                title = p.issue.title
+                api_url = p.issue.url
+                html_url = p.issue.html_url
+            case _:
+                raise ValueError('Unsupported event type for InvolvementActivity')
+        return cls(
+            title=title,
+            api_url=api_url,
+            html_url=html_url,
+            task_type=task_type,
+            action=action,
+            author=event.actor.login,
+            created_at=event.created_at,
+            repo_info=RepoInfo(
+                name=event.repo.name,
+                owner=event.repo.owner,
+                host=Host.GITHUB,
+            ),
+        )
 
 
 @dataclass
 class ReportActivity(InvolvementActivity):
-    action: ActivityAction
+    pass
 
 
 class RepoItem(GObject.Object):
@@ -98,46 +133,26 @@ class ActivityItem(GObject.Object):
     url = GObject.Property(type=str)
     task_type = GObject.Property(type=str)  # "issue" or "pr"
     action = GObject.Property(type=str)
-    created_at = GObject.Property(type=object)
+    repo_long_name = GObject.Property(type=str)
     repo_name = GObject.Property(type=str)
+    created_at = GObject.Property(type=object)
     selected = GObject.Property(type=bool, default=True)
     display_text = GObject.Property(type=str)
-    short_repo_name = GObject.Property(type=str)
     type_char = GObject.Property(type=str)
     author = GObject.Property(type=str)
 
-    def __init__(
-        self,
-        title: str,
-        url: str,
-        task_type: str,
-        action: str,
-        created_at: datetime,
-        repo_name: str,
-        author: str = '',
-        **kwargs: Any,
-    ):
-        super().__init__(**kwargs)
-        self.title = title
-        self.url = url
-        self.task_type = task_type
-        self.action = action
-        self.created_at = created_at
-        self.repo_name = repo_name
-        self.author = author
-        self.selected = True
-        self.display_text = f'<b>[{repo_name}]</b> {GLib.markup_escape_text(title)}'
-        self.short_repo_name = repo_name.split('/')[-1] if '/' in repo_name else repo_name
-        self.type_char = 'P' if task_type == 'PR' else 'I'
 
     @classmethod
-    def from_activity_data(cls, data: ActivityData) -> Self:
+    def from_activity_data(cls, data: InvolvementActivity) -> Self:
+        type_char = 'I' if data.task_type == TaskType.ISSUE else 'P'
         return cls(
-            title=data.title,
-            url=data.url,
-            task_type=str(data.type),
-            action='',  # Action is arguably captured in title now
+            title=data.title or '(No Title)',
+            url=data.html_url,
+            task_type=str(data.task_type),
+            type_char=type_char,
+            action=data.action.value,
             created_at=data.created_at,
-            repo_name=data.repo_name,
-            author='',  # We don't have author in ActivityData yet
+            repo_name=data.repo_info.name,
+            repo_long_name=data.repo_long_name,
+            author=data.author,
         )

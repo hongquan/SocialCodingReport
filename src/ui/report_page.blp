@@ -33,15 +33,13 @@ template $ReportPage: Adw.Bin {
 
       ToggleButton btn_yesterday {
         label: "Yesterday";
-        action-name: "report.filter";
-        action-target: "'yesterday'";
+        active: bind $is_yesterday_active(template.date_named_range) as <bool>;
+        toggled => $load_data();
       }
 
       ToggleButton btn_today {
         label: "Today";
         group: btn_yesterday;
-        action-name: "report.filter";
-        action-target: "'today'";
       }
 
       Button {
@@ -76,7 +74,7 @@ template $ReportPage: Adw.Bin {
             factory: BuilderListItemFactory {
               template ListItem {
                 child: Label {
-                  label: bind template.item as <$ActivityItem>.short_repo_name;
+                  label: bind template.item as <$ActivityItem>.repo_name;
                 };
               }
             };

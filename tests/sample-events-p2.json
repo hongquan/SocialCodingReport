@@ -1,0 +1,2319 @@
+[
+  {
+    "id": "5850573154",
+    "type": "PullRequestReviewEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "review": {
+        "id": 3668954761,
+        "node_id": "PRR_kwDOA7w_yM7ar86J",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "There are too many dirty hacks.\nShould be reworked after #1849 ",
+        "commit_id": "89d77dbbdc37f8c83e81efa1241ab155b9801cd8",
+        "submitted_at": "2026-01-16T05:31:08Z",
+        "state": "changes_requested",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1843#pullrequestreview-3668954761",
+        "pull_request_url": "https://api.github.com/repos/fossasia/eventyay/pulls/1843",
+        "_links": {
+          "html": {
+            "href": "https://github.com/fossasia/eventyay/pull/1843#pullrequestreview-3668954761"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/1843"
+          }
+        },
+        "updated_at": "2026-01-16T05:31:08Z"
+      },
+      "pull_request": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1843",
+        "id": 3178180125,
+        "number": 1843,
+        "head": {
+          "ref": "loop",
+          "sha": "cfe1b091f1b1659f92ac64b73905422226601255",
+          "repo": {
+            "id": 981050049,
+            "url": "https://api.github.com/repos/Saksham-Sirohi/eventyay-tickets",
+            "name": "eventyay-tickets"
+          }
+        },
+        "base": {
+          "ref": "dev",
+          "sha": "9b9bd7bdf5aaebb00cbf1a814e25b3764ad42f5b",
+          "repo": {
+            "id": 62668744,
+            "url": "https://api.github.com/repos/fossasia/eventyay",
+            "name": "eventyay"
+          }
+        }
+      },
+      "action": "created"
+    },
+    "public": true,
+    "created_at": "2026-01-16T05:31:10Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "5850541652",
+    "type": "PullRequestReviewCommentEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "action": "created",
+      "comment": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2696994598",
+        "pull_request_review_id": 3668946848,
+        "id": 2696994598,
+        "node_id": "PRRC_kwDOA7w_yM6gwN8m",
+        "diff_hunk": "@@ -55,7 +78,14 @@ def patched_getattribute(self, name):\n # Configure Django and override LOGGING settings for documentation builds\n # This must be done AFTER django.setup() to avoid triggering early settings initialization\n try:\n-    django.setup()\n+    # Some settings code expects the process CWD to be the project root.\n+    # Temporarily chdir so documentation builds don't require app-side hacks.\n+    _old_cwd = Path.cwd()\n+    try:\n+        os.chdir(Path(__file__).resolve().parent.parent)",
+        "path": "doc/conf.py",
+        "commit_id": "89d77dbbdc37f8c83e81efa1241ab155b9801cd8",
+        "original_commit_id": "89d77dbbdc37f8c83e81efa1241ab155b9801cd8",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "This is dirty hack.\nYou shouldn't need it because `uv` can install our project to Python path.",
+        "created_at": "2026-01-16T05:28:59Z",
+        "updated_at": "2026-01-16T05:28:59Z",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1843#discussion_r2696994598",
+        "pull_request_url": "https://api.github.com/repos/fossasia/eventyay/pulls/1843",
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2696994598"
+          },
+          "html": {
+            "href": "https://github.com/fossasia/eventyay/pull/1843#discussion_r2696994598"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/1843"
+          }
+        },
+        "reactions": {
+          "url": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2696994598/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "original_position": 53,
+        "position": 1,
+        "subject_type": "line"
+      },
+      "pull_request": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1843",
+        "id": 3178180125,
+        "number": 1843,
+        "head": {
+          "ref": "loop",
+          "sha": "cfe1b091f1b1659f92ac64b73905422226601255",
+          "repo": {
+            "id": 981050049,
+            "url": "https://api.github.com/repos/Saksham-Sirohi/eventyay-tickets",
+            "name": "eventyay-tickets"
+          }
+        },
+        "base": {
+          "ref": "dev",
+          "sha": "9b9bd7bdf5aaebb00cbf1a814e25b3764ad42f5b",
+          "repo": {
+            "id": 62668744,
+            "url": "https://api.github.com/repos/fossasia/eventyay",
+            "name": "eventyay"
+          }
+        }
+      }
+    },
+    "public": true,
+    "created_at": "2026-01-16T05:28:59Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "5850541605",
+    "type": "PullRequestReviewEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "review": {
+        "id": 3668946848,
+        "node_id": "PRR_kwDOA7w_yM7ar6-g",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": null,
+        "commit_id": "89d77dbbdc37f8c83e81efa1241ab155b9801cd8",
+        "submitted_at": "2026-01-16T05:28:59Z",
+        "state": "commented",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1843#pullrequestreview-3668946848",
+        "pull_request_url": "https://api.github.com/repos/fossasia/eventyay/pulls/1843",
+        "_links": {
+          "html": {
+            "href": "https://github.com/fossasia/eventyay/pull/1843#pullrequestreview-3668946848"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/1843"
+          }
+        },
+        "updated_at": "2026-01-16T05:28:59Z"
+      },
+      "pull_request": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1843",
+        "id": 3178180125,
+        "number": 1843,
+        "head": {
+          "ref": "loop",
+          "sha": "cfe1b091f1b1659f92ac64b73905422226601255",
+          "repo": {
+            "id": 981050049,
+            "url": "https://api.github.com/repos/Saksham-Sirohi/eventyay-tickets",
+            "name": "eventyay-tickets"
+          }
+        },
+        "base": {
+          "ref": "dev",
+          "sha": "9b9bd7bdf5aaebb00cbf1a814e25b3764ad42f5b",
+          "repo": {
+            "id": 62668744,
+            "url": "https://api.github.com/repos/fossasia/eventyay",
+            "name": "eventyay"
+          }
+        }
+      },
+      "action": "created"
+    },
+    "public": true,
+    "created_at": "2026-01-16T05:29:01Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "5850524753",
+    "type": "PullRequestReviewCommentEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "action": "created",
+      "comment": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2696992032",
+        "pull_request_review_id": 3668942837,
+        "id": 2696992032,
+        "node_id": "PRRC_kwDOA7w_yM6gwNUg",
+        "diff_hunk": "@@ -14,20 +14,43 @@\n \n import os\n import sys\n+import types\n+from pathlib import Path\n+import re\n \n # If extensions (or modules to document with autodoc) are in another directory,\n # add these directories to sys.path here. If the directory is relative to the\n # documentation root, use os.path.abspath to make it absolute, like shown here.\n \n sys.path.insert(0, os.path.abspath('../app'))\n \n+# Python 3.14 removed the stdlib `cgi` module, but some transitive deps still\n+# import it for `cgi.parse_header`. Provide a tiny stub during docs builds.\n+if 'cgi' not in sys.modules:",
+        "path": "doc/conf.py",
+        "commit_id": "89d77dbbdc37f8c83e81efa1241ab155b9801cd8",
+        "original_commit_id": "89d77dbbdc37f8c83e81efa1241ab155b9801cd8",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "We should remove the dependency which is not compatible with Python 3.13, rather than to fake the `cgi` module.",
+        "created_at": "2026-01-16T05:27:56Z",
+        "updated_at": "2026-01-16T05:27:57Z",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1843#discussion_r2696992032",
+        "pull_request_url": "https://api.github.com/repos/fossasia/eventyay/pulls/1843",
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2696992032"
+          },
+          "html": {
+            "href": "https://github.com/fossasia/eventyay/pull/1843#discussion_r2696992032"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/1843"
+          }
+        },
+        "reactions": {
+          "url": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2696992032/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "original_position": 16,
+        "position": 1,
+        "subject_type": "line"
+      },
+      "pull_request": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1843",
+        "id": 3178180125,
+        "number": 1843,
+        "head": {
+          "ref": "loop",
+          "sha": "cfe1b091f1b1659f92ac64b73905422226601255",
+          "repo": {
+            "id": 981050049,
+            "url": "https://api.github.com/repos/Saksham-Sirohi/eventyay-tickets",
+            "name": "eventyay-tickets"
+          }
+        },
+        "base": {
+          "ref": "dev",
+          "sha": "9b9bd7bdf5aaebb00cbf1a814e25b3764ad42f5b",
+          "repo": {
+            "id": 62668744,
+            "url": "https://api.github.com/repos/fossasia/eventyay",
+            "name": "eventyay"
+          }
+        }
+      }
+    },
+    "public": true,
+    "created_at": "2026-01-16T05:27:56Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "5850524749",
+    "type": "PullRequestReviewEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "review": {
+        "id": 3668942837,
+        "node_id": "PRR_kwDOA7w_yM7ar5_1",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": null,
+        "commit_id": "89d77dbbdc37f8c83e81efa1241ab155b9801cd8",
+        "submitted_at": "2026-01-16T05:27:56Z",
+        "state": "commented",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1843#pullrequestreview-3668942837",
+        "pull_request_url": "https://api.github.com/repos/fossasia/eventyay/pulls/1843",
+        "_links": {
+          "html": {
+            "href": "https://github.com/fossasia/eventyay/pull/1843#pullrequestreview-3668942837"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/1843"
+          }
+        },
+        "updated_at": "2026-01-16T05:27:57Z"
+      },
+      "pull_request": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1843",
+        "id": 3178180125,
+        "number": 1843,
+        "head": {
+          "ref": "loop",
+          "sha": "cfe1b091f1b1659f92ac64b73905422226601255",
+          "repo": {
+            "id": 981050049,
+            "url": "https://api.github.com/repos/Saksham-Sirohi/eventyay-tickets",
+            "name": "eventyay-tickets"
+          }
+        },
+        "base": {
+          "ref": "dev",
+          "sha": "9b9bd7bdf5aaebb00cbf1a814e25b3764ad42f5b",
+          "repo": {
+            "id": 62668744,
+            "url": "https://api.github.com/repos/fossasia/eventyay",
+            "name": "eventyay"
+          }
+        }
+      },
+      "action": "created"
+    },
+    "public": true,
+    "created_at": "2026-01-16T05:27:58Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "5850473256",
+    "type": "IssueCommentEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "action": "created",
+      "issue": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/issues/1847",
+        "repository_url": "https://api.github.com/repos/fossasia/eventyay",
+        "labels_url": "https://api.github.com/repos/fossasia/eventyay/issues/1847/labels{/name}",
+        "comments_url": "https://api.github.com/repos/fossasia/eventyay/issues/1847/comments",
+        "events_url": "https://api.github.com/repos/fossasia/eventyay/issues/1847/events",
+        "html_url": "https://github.com/fossasia/eventyay/issues/1847",
+        "id": 3820313165,
+        "node_id": "I_kwDOA7w_yM7jtVpN",
+        "number": 1847,
+        "title": "Replace bleach with nh3",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "labels": [],
+        "state": "open",
+        "locked": false,
+        "assignee": null,
+        "assignees": [],
+        "milestone": null,
+        "comments": 2,
+        "created_at": "2026-01-16T04:37:00Z",
+        "updated_at": "2026-01-16T05:24:20Z",
+        "closed_at": null,
+        "type": null,
+        "active_lock_reason": null,
+        "sub_issues_summary": {
+          "total": 0,
+          "completed": 0,
+          "percent_completed": 0
+        },
+        "issue_dependencies_summary": {
+          "blocked_by": 0,
+          "total_blocked_by": 0,
+          "blocking": 0,
+          "total_blocking": 0
+        },
+        "body": "Bleach is [deprecated](https://github.com/mozilla/bleach/issues/698).\nUse [nh3](https://pypi.org/project/nh3/) as faster alternative (already in dependencies list).",
+        "reactions": {
+          "url": "https://api.github.com/repos/fossasia/eventyay/issues/1847/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "timeline_url": "https://api.github.com/repos/fossasia/eventyay/issues/1847/timeline",
+        "performed_via_github_app": null,
+        "state_reason": null
+      },
+      "comment": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/issues/comments/3758231405",
+        "html_url": "https://github.com/fossasia/eventyay/issues/1847#issuecomment-3758231405",
+        "issue_url": "https://api.github.com/repos/fossasia/eventyay/issues/1847",
+        "id": 3758231405,
+        "node_id": "IC_kwDOA7w_yM7gAg9t",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-01-16T05:24:20Z",
+        "updated_at": "2026-01-16T05:24:20Z",
+        "body": "@VijayabaskarR-06 We don't explictly assign because people often get busy after being assigned and let the task stuck. You just start working and create draft PR to let others know that you are working on it.\n\nPlease also not use all-uppercase.",
+        "reactions": {
+          "url": "https://api.github.com/repos/fossasia/eventyay/issues/comments/3758231405/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    },
+    "public": true,
+    "created_at": "2026-01-16T05:24:20Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "5850436443",
+    "type": "PullRequestEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "action": "opened",
+      "number": 1849,
+      "pull_request": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1849",
+        "id": 3179855459,
+        "number": 1849,
+        "head": {
+          "ref": "feature/drop-requirements-txt",
+          "sha": "93ca26194100eb840fa9d81f42092bbda9d7363b",
+          "repo": {
+            "id": 808984300,
+            "url": "https://api.github.com/repos/hongquan/eventyay-tickets",
+            "name": "eventyay-tickets"
+          }
+        },
+        "base": {
+          "ref": "dev",
+          "sha": "cd96adb5554c14010359483cf3cb4061b1ff27d3",
+          "repo": {
+            "id": 62668744,
+            "url": "https://api.github.com/repos/fossasia/eventyay",
+            "name": "eventyay"
+          }
+        }
+      }
+    },
+    "public": true,
+    "created_at": "2026-01-16T05:21:43Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "7523707168",
+    "type": "PushEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 808984300,
+      "name": "hongquan/eventyay-tickets",
+      "url": "https://api.github.com/repos/hongquan/eventyay-tickets"
+    },
+    "payload": {
+      "repository_id": 808984300,
+      "push_id": 29818907023,
+      "ref": "refs/heads/feature/drop-requirements-txt",
+      "head": "a15bf6d97c1c9748c1639d3ba347c6e4ac3bb465",
+      "before": "5ad7ca9b2b37a67f694769d60b548513a520a819"
+    },
+    "public": true,
+    "created_at": "2026-01-16T05:21:12Z"
+  },
+  {
+    "id": "7523540833",
+    "type": "PushEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 808984300,
+      "name": "hongquan/eventyay-tickets",
+      "url": "https://api.github.com/repos/hongquan/eventyay-tickets"
+    },
+    "payload": {
+      "repository_id": 808984300,
+      "push_id": 29818740722,
+      "ref": "refs/heads/feature/drop-requirements-txt",
+      "head": "5ad7ca9b2b37a67f694769d60b548513a520a819",
+      "before": "7b36a61aee006949f1eb4df170334932fa00d707"
+    },
+    "public": true,
+    "created_at": "2026-01-16T05:12:58Z"
+  },
+  {
+    "id": "7523517809",
+    "type": "CreateEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 808984300,
+      "name": "hongquan/eventyay-tickets",
+      "url": "https://api.github.com/repos/hongquan/eventyay-tickets"
+    },
+    "payload": {
+      "ref": "feature/drop-requirements-txt",
+      "ref_type": "branch",
+      "full_ref": "refs/heads/feature/drop-requirements-txt",
+      "master_branch": "development",
+      "description": "https://tickets-dev.eventyay.com",
+      "pusher_type": "user"
+    },
+    "public": true,
+    "created_at": "2026-01-16T05:11:44Z"
+  },
+  {
+    "id": "5849885933",
+    "type": "IssuesEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "action": "opened",
+      "issue": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/issues/1847",
+        "repository_url": "https://api.github.com/repos/fossasia/eventyay",
+        "labels_url": "https://api.github.com/repos/fossasia/eventyay/issues/1847/labels{/name}",
+        "comments_url": "https://api.github.com/repos/fossasia/eventyay/issues/1847/comments",
+        "events_url": "https://api.github.com/repos/fossasia/eventyay/issues/1847/events",
+        "html_url": "https://github.com/fossasia/eventyay/issues/1847",
+        "id": 3820313165,
+        "node_id": "I_kwDOA7w_yM7jtVpN",
+        "number": 1847,
+        "title": "Replace bleach with nh3",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "labels": [],
+        "state": "open",
+        "locked": false,
+        "assignee": null,
+        "assignees": [],
+        "milestone": null,
+        "comments": 2,
+        "created_at": "2026-01-16T04:37:00Z",
+        "updated_at": "2026-01-16T05:24:20Z",
+        "closed_at": null,
+        "type": null,
+        "active_lock_reason": null,
+        "sub_issues_summary": {
+          "total": 0,
+          "completed": 0,
+          "percent_completed": 0
+        },
+        "issue_dependencies_summary": {
+          "blocked_by": 0,
+          "total_blocked_by": 0,
+          "blocking": 0,
+          "total_blocking": 0
+        },
+        "body": "Bleach is [deprecated](https://github.com/mozilla/bleach/issues/698).\nUse [nh3](https://pypi.org/project/nh3/) as faster alternative (already in dependencies list).",
+        "reactions": {
+          "url": "https://api.github.com/repos/fossasia/eventyay/issues/1847/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "timeline_url": "https://api.github.com/repos/fossasia/eventyay/issues/1847/timeline",
+        "performed_via_github_app": null,
+        "state_reason": null
+      }
+    },
+    "public": true,
+    "created_at": "2026-01-16T04:37:01Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "5848966562",
+    "type": "IssueCommentEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "action": "created",
+      "issue": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/issues/1844",
+        "repository_url": "https://api.github.com/repos/fossasia/eventyay",
+        "labels_url": "https://api.github.com/repos/fossasia/eventyay/issues/1844/labels{/name}",
+        "comments_url": "https://api.github.com/repos/fossasia/eventyay/issues/1844/comments",
+        "events_url": "https://api.github.com/repos/fossasia/eventyay/issues/1844/events",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1844",
+        "id": 3818961566,
+        "node_id": "PR_kwDOA7w_yM69dWFz",
+        "number": 1844,
+        "title": "fix: migrate to uv-only dependency management (#1841)",
+        "user": {
+          "login": "Abhijeet212004",
+          "id": 169303812,
+          "node_id": "U_kgDOChdfBA",
+          "avatar_url": "https://avatars.githubusercontent.com/u/169303812?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/Abhijeet212004",
+          "html_url": "https://github.com/Abhijeet212004",
+          "followers_url": "https://api.github.com/users/Abhijeet212004/followers",
+          "following_url": "https://api.github.com/users/Abhijeet212004/following{/other_user}",
+          "gists_url": "https://api.github.com/users/Abhijeet212004/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/Abhijeet212004/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/Abhijeet212004/subscriptions",
+          "organizations_url": "https://api.github.com/users/Abhijeet212004/orgs",
+          "repos_url": "https://api.github.com/users/Abhijeet212004/repos",
+          "events_url": "https://api.github.com/users/Abhijeet212004/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/Abhijeet212004/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "labels": [],
+        "state": "closed",
+        "locked": false,
+        "assignee": null,
+        "assignees": [],
+        "milestone": null,
+        "comments": 3,
+        "created_at": "2026-01-15T20:00:28Z",
+        "updated_at": "2026-01-16T10:41:01Z",
+        "closed_at": "2026-01-16T10:41:00Z",
+        "type": null,
+        "active_lock_reason": null,
+        "draft": false,
+        "pull_request": {
+          "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1844",
+          "html_url": "https://github.com/fossasia/eventyay/pull/1844",
+          "diff_url": "https://github.com/fossasia/eventyay/pull/1844.diff",
+          "patch_url": "https://github.com/fossasia/eventyay/pull/1844.patch",
+          "merged_at": null
+        },
+        "body": "Hi @mariobehling,\r\n\r\nI've done the changes from #1841 for the uv migration.\r\n\r\n**What changed:**\r\n- Dependabot now uses `uv` instead of `pip` and points to `/app` directory\r\n- Removed that broken `-e ../` from doc/requirements.txt that was causing errors\r\n\r\n**One question though:** The old config had daily updates but your example shows weekly. I changed it to weekly but can switch back to daily if you want?\r\n\r\nI tested it locally - uv sync works and CI should be fine since it already uses uv.\r\n\r\nAfter this merges I'll check if Dependabot runs properly and post the screenshot in #1841.\r\n\r\nFixes #1841\n\n## Summary by Sourcery\n\nMigrate automated Python dependency updates to use uv and clean up documentation dependency configuration.\n\nBuild:\n- Update Dependabot configuration to manage application Python dependencies via uv in the /app directory with a weekly update schedule.\n\nDocumentation:\n- Remove the broken editable install reference from doc/requirements.txt to simplify documentation dependency installation.",
+        "reactions": {
+          "url": "https://api.github.com/repos/fossasia/eventyay/issues/1844/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "timeline_url": "https://api.github.com/repos/fossasia/eventyay/issues/1844/timeline",
+        "performed_via_github_app": null,
+        "state_reason": null
+      },
+      "comment": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/issues/comments/3757942770",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1844#issuecomment-3757942770",
+        "issue_url": "https://api.github.com/repos/fossasia/eventyay/issues/1844",
+        "id": 3757942770,
+        "node_id": "IC_kwDOA7w_yM7f_afy",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-01-16T03:22:19Z",
+        "updated_at": "2026-01-16T03:22:19Z",
+        "body": "There is no reason to keep _requirements.txt_ file when we already have _pyproject.toml_ file.",
+        "reactions": {
+          "url": "https://api.github.com/repos/fossasia/eventyay/issues/comments/3757942770/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    },
+    "public": true,
+    "created_at": "2026-01-16T03:22:19Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "5848950458",
+    "type": "IssueCommentEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "action": "created",
+      "issue": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/issues/1841",
+        "repository_url": "https://api.github.com/repos/fossasia/eventyay",
+        "labels_url": "https://api.github.com/repos/fossasia/eventyay/issues/1841/labels{/name}",
+        "comments_url": "https://api.github.com/repos/fossasia/eventyay/issues/1841/comments",
+        "events_url": "https://api.github.com/repos/fossasia/eventyay/issues/1841/events",
+        "html_url": "https://github.com/fossasia/eventyay/issues/1841",
+        "id": 3818238157,
+        "node_id": "I_kwDOA7w_yM7jlbDN",
+        "number": 1841,
+        "title": "Switch Python dependency management to uv lockfile only and confirm Dependabot works in Network Updates",
+        "user": {
+          "login": "mariobehling",
+          "id": 1583873,
+          "node_id": "MDQ6VXNlcjE1ODM4NzM=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/1583873?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/mariobehling",
+          "html_url": "https://github.com/mariobehling",
+          "followers_url": "https://api.github.com/users/mariobehling/followers",
+          "following_url": "https://api.github.com/users/mariobehling/following{/other_user}",
+          "gists_url": "https://api.github.com/users/mariobehling/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/mariobehling/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/mariobehling/subscriptions",
+          "organizations_url": "https://api.github.com/users/mariobehling/orgs",
+          "repos_url": "https://api.github.com/users/mariobehling/repos",
+          "events_url": "https://api.github.com/users/mariobehling/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/mariobehling/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "labels": [],
+        "state": "closed",
+        "locked": false,
+        "assignee": null,
+        "assignees": [],
+        "milestone": null,
+        "comments": 1,
+        "created_at": "2026-01-15T16:21:20Z",
+        "updated_at": "2026-01-16T09:19:48Z",
+        "closed_at": "2026-01-16T09:19:48Z",
+        "type": null,
+        "active_lock_reason": null,
+        "sub_issues_summary": {
+          "total": 0,
+          "completed": 0,
+          "percent_completed": 0
+        },
+        "issue_dependencies_summary": {
+          "blocked_by": 0,
+          "total_blocked_by": 0,
+          "blocking": 0,
+          "total_blocking": 0
+        },
+        "body": "The project uses **uv** for Python dependency management. To align with recommended best practices and stabilize automated dependency updates, we should adopt the following model:\n\n* `pyproject.toml` remains the source of dependency constraints\n* `uv.lock` is the single lockfile for application dependencies\n* Dependabot updates only `uv.lock` using the `uv` ecosystem\n\nThis should also resolve the current Dependabot failures related to path based dependencies (for example `-e ../`).\n\n### Proposed Changes\n\n#### 1. Adopt uv model as the standard\n\n* Treat `pyproject.toml` as the authoritative source for dependency constraints\n* Use `uv.lock` as the only lockfile for application dependencies\n* Do not use application level `requirements.txt` as a dependency source of truth\n\n#### 2. Update Dependabot configuration\n\n* Replace the application `pip` entry with a `uv` ecosystem entry targeting `/app`\n* Keep `pip` only for docs if strictly required\n\nExample:\n\n```yaml\n- package-ecosystem: \"uv\"\n  directory: \"/app\"\n  schedule:\n    interval: \"weekly\"\n```\n\n#### 3. Fix docs dependency file that breaks Dependabot\n\n* Update `doc/requirements.txt` to remove or correct editable path dependencies\n* If docs require editable install of the app, change `-e ../` to `-e ../app`\n* Otherwise remove the editable line from doc requirements\n\n#### 4. Align CI and contributor workflow\n\n* Ensure CI uses uv commands (`uv sync` or equivalent) rather than `pip install -r ...` for the application\n* Document how to update dependencies and lockfiles\n\n### Verification Requirements\n\n#### A. Dependabot run success\n\n* After merging, Dependabot should run without errors and open PRs updating `uv.lock`\n\n#### B. Confirm in GitHub Network Updates\n\n* Verify that the repository’s Dependabot activity appears and updates are visible under:\n  `Repository -> Insights -> Dependency graph -> Dependabot` and in the Network Updates view at https://github.com/fossasia/eventyay/network/updates\n* Add a comment to this issue with a screenshot or short note confirming it is visible and working\n\n### Acceptance Criteria\n\n* Dependabot successfully creates PRs updating `uv.lock`\n* No Dependabot failures related to path based dependencies\n* CI passes using uv based install steps\n* Confirmation is posted that updates are visible in GitHub’s dependency update views\n",
+        "reactions": {
+          "url": "https://api.github.com/repos/fossasia/eventyay/issues/1841/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "timeline_url": "https://api.github.com/repos/fossasia/eventyay/issues/1841/timeline",
+        "performed_via_github_app": null,
+        "state_reason": "completed"
+      },
+      "comment": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/issues/comments/3757939684",
+        "html_url": "https://github.com/fossasia/eventyay/issues/1841#issuecomment-3757939684",
+        "issue_url": "https://api.github.com/repos/fossasia/eventyay/issues/1841",
+        "id": 3757939684,
+        "node_id": "IC_kwDOA7w_yM7f_Zvk",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-01-16T03:21:02Z",
+        "updated_at": "2026-01-16T03:21:02Z",
+        "body": "The _requirements.txt_ file should be deleted. We are managing dependencies in _pyproject.toml_.",
+        "reactions": {
+          "url": "https://api.github.com/repos/fossasia/eventyay/issues/comments/3757939684/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    },
+    "public": true,
+    "created_at": "2026-01-16T03:21:02Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "7520232728",
+    "type": "PushEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 1134416701,
+      "name": "hongquan/SocialCodingReport",
+      "url": "https://api.github.com/repos/hongquan/SocialCodingReport"
+    },
+    "payload": {
+      "repository_id": 1134416701,
+      "push_id": 29815430163,
+      "ref": "refs/heads/main",
+      "head": "62e5e0d5653e28fe7a67eb7e9bcefd2310dac0e5",
+      "before": "9d015b7624c462922e6897f60be1525ad4267438"
+    },
+    "public": true,
+    "created_at": "2026-01-16T02:17:32Z"
+  },
+  {
+    "id": "5837433467",
+    "type": "PullRequestReviewEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "review": {
+        "id": 3666412878,
+        "node_id": "PRR_kwDOA7w_yM7aiQVO",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": null,
+        "commit_id": "1d862b3e45e9bbd4eaa5b953b41c4889a78a26aa",
+        "submitted_at": "2026-01-15T16:07:08Z",
+        "state": "approved",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1823#pullrequestreview-3666412878",
+        "pull_request_url": "https://api.github.com/repos/fossasia/eventyay/pulls/1823",
+        "_links": {
+          "html": {
+            "href": "https://github.com/fossasia/eventyay/pull/1823#pullrequestreview-3666412878"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/1823"
+          }
+        },
+        "updated_at": "2026-01-15T16:07:08Z"
+      },
+      "pull_request": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1823",
+        "id": 3176229948,
+        "number": 1823,
+        "head": {
+          "ref": "fix/drop-forkawesome",
+          "sha": "1d862b3e45e9bbd4eaa5b953b41c4889a78a26aa",
+          "repo": {
+            "id": 1087588392,
+            "url": "https://api.github.com/repos/prayag78/eventyay",
+            "name": "eventyay"
+          }
+        },
+        "base": {
+          "ref": "dev",
+          "sha": "da0000468201d4faea58505e329bdb089a8223bf",
+          "repo": {
+            "id": 62668744,
+            "url": "https://api.github.com/repos/fossasia/eventyay",
+            "name": "eventyay"
+          }
+        }
+      },
+      "action": "created"
+    },
+    "public": true,
+    "created_at": "2026-01-15T16:07:09Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "7505731679",
+    "type": "PushEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 1134416701,
+      "name": "hongquan/SocialCodingReport",
+      "url": "https://api.github.com/repos/hongquan/SocialCodingReport"
+    },
+    "payload": {
+      "repository_id": 1134416701,
+      "push_id": 29800918725,
+      "ref": "refs/heads/main",
+      "head": "9d015b7624c462922e6897f60be1525ad4267438",
+      "before": "62220bed6214846250458d5cba49c3b6114e1db0"
+    },
+    "public": true,
+    "created_at": "2026-01-15T16:02:54Z"
+  },
+  {
+    "id": "7505586306",
+    "type": "PushEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 1134416701,
+      "name": "hongquan/SocialCodingReport",
+      "url": "https://api.github.com/repos/hongquan/SocialCodingReport"
+    },
+    "payload": {
+      "repository_id": 1134416701,
+      "push_id": 29800773228,
+      "ref": "refs/heads/main",
+      "head": "62220bed6214846250458d5cba49c3b6114e1db0",
+      "before": "6fce8b778df20de5f1c97e46301a206fa76973a7"
+    },
+    "public": true,
+    "created_at": "2026-01-15T15:58:21Z"
+  },
+  {
+    "id": "7503758839",
+    "type": "PushEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 1134416701,
+      "name": "hongquan/SocialCodingReport",
+      "url": "https://api.github.com/repos/hongquan/SocialCodingReport"
+    },
+    "payload": {
+      "repository_id": 1134416701,
+      "push_id": 29798946674,
+      "ref": "refs/heads/main",
+      "head": "6fce8b778df20de5f1c97e46301a206fa76973a7",
+      "before": "564040bddee2794428a78ca87c9954278cedda90"
+    },
+    "public": true,
+    "created_at": "2026-01-15T15:01:08Z"
+  },
+  {
+    "id": "7497505869",
+    "type": "PushEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 1134416701,
+      "name": "hongquan/SocialCodingReport",
+      "url": "https://api.github.com/repos/hongquan/SocialCodingReport"
+    },
+    "payload": {
+      "repository_id": 1134416701,
+      "push_id": 29792690960,
+      "ref": "refs/heads/main",
+      "head": "564040bddee2794428a78ca87c9954278cedda90",
+      "before": "5614776acd388298e2080cba24a8cd99131ce549"
+    },
+    "public": true,
+    "created_at": "2026-01-15T11:28:11Z"
+  },
+  {
+    "id": "7497100350",
+    "type": "PushEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 1134416701,
+      "name": "hongquan/SocialCodingReport",
+      "url": "https://api.github.com/repos/hongquan/SocialCodingReport"
+    },
+    "payload": {
+      "repository_id": 1134416701,
+      "push_id": 29792285073,
+      "ref": "refs/heads/main",
+      "head": "5614776acd388298e2080cba24a8cd99131ce549",
+      "before": "8db4b3833b144033f5a5acd3912e07fe22f4cd72"
+    },
+    "public": true,
+    "created_at": "2026-01-15T11:12:31Z"
+  },
+  {
+    "id": "5830224494",
+    "type": "PullRequestReviewEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "review": {
+        "id": 3665092195,
+        "node_id": "PRR_kwDOA7w_yM7adN5j",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": null,
+        "commit_id": "fbe418b7f8305a5da6130a9b463025662d372175",
+        "submitted_at": "2026-01-15T11:07:46Z",
+        "state": "commented",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1738#pullrequestreview-3665092195",
+        "pull_request_url": "https://api.github.com/repos/fossasia/eventyay/pulls/1738",
+        "_links": {
+          "html": {
+            "href": "https://github.com/fossasia/eventyay/pull/1738#pullrequestreview-3665092195"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/1738"
+          }
+        },
+        "updated_at": "2026-01-15T11:07:46Z"
+      },
+      "pull_request": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1738",
+        "id": 3161068127,
+        "number": 1738,
+        "head": {
+          "ref": "feature/add-preferred-login-provider",
+          "sha": "b483dbd91c3c685ba8664cd4b3daafdbb0b1bb4b",
+          "repo": {
+            "id": 1129726489,
+            "url": "https://api.github.com/repos/Coll76/eventyay",
+            "name": "eventyay"
+          }
+        },
+        "base": {
+          "ref": "dev",
+          "sha": "96e7cd5e7770d6426bdcce8a8074b1435b656c01",
+          "repo": {
+            "id": 62668744,
+            "url": "https://api.github.com/repos/fossasia/eventyay",
+            "name": "eventyay"
+          }
+        }
+      },
+      "action": "created"
+    },
+    "public": true,
+    "created_at": "2026-01-15T11:07:47Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "5830224440",
+    "type": "PullRequestReviewCommentEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "action": "created",
+      "comment": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2693954819",
+        "pull_request_review_id": 3665092195,
+        "id": 2693954819,
+        "node_id": "PRRC_kwDOA7w_yM6gkn0D",
+        "diff_hunk": "@@ -0,0 +1,45 @@\n+/* Preferred provider spacing */\n+.preferred-provider {\n+    margin-bottom: 20px;\n+}\n+\n+/* Disabled remember-me indicator */\n+.preferred-provider-remember {\n+    margin-top: 10px;\n+    margin-bottom: 0;\n+}\n+\n+.preferred-provider-remember label {\n+    font-weight: normal;\n+    color: #666;\n+    cursor: default; /* Shows it's not clickable */\n+}\n+\n+.preferred-provider-remember input[type=\"checkbox\"] {\n+    margin-right: 5px;\n+}\n+\n+/* Login separator (\"or use the following\") */\n+.login-separator {\n+    position: relative;\n+    text-align: center;\n+    margin: 20px 0;\n+}\n+\n+.login-separator hr {\n+    border-top: 1px solid #e0e0e0;\n+    margin: 0;\n+}\n+\n+.login-separator span {\n+    position: absolute;\n+    top: 50%;\n+    left: 50%;\n+    transform: translate(-50%, -50%);\n+    background: #ffffff;\n+    padding: 0 15px;\n+    color: #999;\n+    font-size: 14px;\n+    line-height: 1;\n+    white-space: nowrap;\n+}",
+        "path": "app/eventyay/static/eventyay-common/css/auth_login.css",
+        "commit_id": "fbe418b7f8305a5da6130a9b463025662d372175",
+        "original_commit_id": "fbe418b7f8305a5da6130a9b463025662d372175",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "Add blank line at the end of file.",
+        "created_at": "2026-01-15T11:07:46Z",
+        "updated_at": "2026-01-15T11:07:46Z",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1738#discussion_r2693954819",
+        "pull_request_url": "https://api.github.com/repos/fossasia/eventyay/pulls/1738",
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2693954819"
+          },
+          "html": {
+            "href": "https://github.com/fossasia/eventyay/pull/1738#discussion_r2693954819"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/1738"
+          }
+        },
+        "reactions": {
+          "url": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2693954819/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "original_position": 45,
+        "position": 1,
+        "subject_type": "line"
+      },
+      "pull_request": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1738",
+        "id": 3161068127,
+        "number": 1738,
+        "head": {
+          "ref": "feature/add-preferred-login-provider",
+          "sha": "b483dbd91c3c685ba8664cd4b3daafdbb0b1bb4b",
+          "repo": {
+            "id": 1129726489,
+            "url": "https://api.github.com/repos/Coll76/eventyay",
+            "name": "eventyay"
+          }
+        },
+        "base": {
+          "ref": "dev",
+          "sha": "96e7cd5e7770d6426bdcce8a8074b1435b656c01",
+          "repo": {
+            "id": 62668744,
+            "url": "https://api.github.com/repos/fossasia/eventyay",
+            "name": "eventyay"
+          }
+        }
+      }
+    },
+    "public": true,
+    "created_at": "2026-01-15T11:07:46Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "5830212388",
+    "type": "PullRequestReviewEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "review": {
+        "id": 3665090046,
+        "node_id": "PRR_kwDOA7w_yM7adNX-",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": null,
+        "commit_id": "fbe418b7f8305a5da6130a9b463025662d372175",
+        "submitted_at": "2026-01-15T11:07:09Z",
+        "state": "changes_requested",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1738#pullrequestreview-3665090046",
+        "pull_request_url": "https://api.github.com/repos/fossasia/eventyay/pulls/1738",
+        "_links": {
+          "html": {
+            "href": "https://github.com/fossasia/eventyay/pull/1738#pullrequestreview-3665090046"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/1738"
+          }
+        },
+        "updated_at": "2026-01-15T11:07:09Z"
+      },
+      "pull_request": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1738",
+        "id": 3161068127,
+        "number": 1738,
+        "head": {
+          "ref": "feature/add-preferred-login-provider",
+          "sha": "b483dbd91c3c685ba8664cd4b3daafdbb0b1bb4b",
+          "repo": {
+            "id": 1129726489,
+            "url": "https://api.github.com/repos/Coll76/eventyay",
+            "name": "eventyay"
+          }
+        },
+        "base": {
+          "ref": "dev",
+          "sha": "96e7cd5e7770d6426bdcce8a8074b1435b656c01",
+          "repo": {
+            "id": 62668744,
+            "url": "https://api.github.com/repos/fossasia/eventyay",
+            "name": "eventyay"
+          }
+        }
+      },
+      "action": "created"
+    },
+    "public": true,
+    "created_at": "2026-01-15T11:07:11Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "5830210439",
+    "type": "PullRequestReviewCommentEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "action": "created",
+      "comment": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2693952941",
+        "pull_request_review_id": 3665090046,
+        "id": 2693952941,
+        "node_id": "PRRC_kwDOA7w_yM6gknWt",
+        "diff_hunk": "@@ -158,55 +158,55 @@ def login(request):\n \n     gs = GlobalSettingsObject()\n     login_providers = gs.settings.get('login_providers', as_type=dict) or {}\n-    \n-    # Order providers: preferred first, then others.\n-    # If multiple providers are (mis)configured as preferred, keep the first\n-    # one as preferred and treat the rest as normal providers, logging a warning.\n-    preferred_providers = []\n-    non_preferred_providers = []\n+\n+    # Filter enabled providers and sort by is_preferred (True first, then False)\n+    enabled_providers = {\n+        provider: settings\n+        for provider, settings in login_providers.items()\n+        if settings.get('state', False)\n+    }\n+\n+    # Sort: preferred providers first, then non-preferred\n+    # sorted() with key returning (not is_preferred, provider) ensures:\n+    # - is_preferred=True comes first (False < True, so not True = False comes before not False = True)\n+    # - Within same preference level, maintain alphabetical order by provider name\n+    ordered_providers = dict(\n+        sorted(\n+            enabled_providers.items(),\n+            key=lambda item: (not item[1].get('is_preferred', False), item[0])",
+        "path": "app/eventyay/eventyay_common/views/auth.py",
+        "commit_id": "ab127ba4eb573962b2859a4290b9468d48c12583",
+        "original_commit_id": "fbe418b7f8305a5da6130a9b463025662d372175",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "You should unpack the arguments to make code readable:\n\n```py\nlambda name, prov: (not.prov['is_preferred'], name)\n```\n\nBtw, if you parsed the `gs.settings` data with Pydantic model, you don't have to repeat `.get('some_key', value)` again and again.",
+        "created_at": "2026-01-15T11:07:04Z",
+        "updated_at": "2026-01-15T11:07:10Z",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1738#discussion_r2693952941",
+        "pull_request_url": "https://api.github.com/repos/fossasia/eventyay/pulls/1738",
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2693952941"
+          },
+          "html": {
+            "href": "https://github.com/fossasia/eventyay/pull/1738#discussion_r2693952941"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/1738"
+          }
+        },
+        "reactions": {
+          "url": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2693952941/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "original_position": 41,
+        "position": 1,
+        "subject_type": "line"
+      },
+      "pull_request": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1738",
+        "id": 3161068127,
+        "number": 1738,
+        "head": {
+          "ref": "feature/add-preferred-login-provider",
+          "sha": "b483dbd91c3c685ba8664cd4b3daafdbb0b1bb4b",
+          "repo": {
+            "id": 1129726489,
+            "url": "https://api.github.com/repos/Coll76/eventyay",
+            "name": "eventyay"
+          }
+        },
+        "base": {
+          "ref": "dev",
+          "sha": "96e7cd5e7770d6426bdcce8a8074b1435b656c01",
+          "repo": {
+            "id": 62668744,
+            "url": "https://api.github.com/repos/fossasia/eventyay",
+            "name": "eventyay"
+          }
+        }
+      }
+    },
+    "public": true,
+    "created_at": "2026-01-15T11:07:04Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "5828341478",
+    "type": "IssueCommentEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 704471893,
+      "name": "g-plane/markup_fmt",
+      "url": "https://api.github.com/repos/g-plane/markup_fmt"
+    },
+    "payload": {
+      "action": "created",
+      "issue": {
+        "url": "https://api.github.com/repos/g-plane/markup_fmt/issues/190",
+        "repository_url": "https://api.github.com/repos/g-plane/markup_fmt",
+        "labels_url": "https://api.github.com/repos/g-plane/markup_fmt/issues/190/labels{/name}",
+        "comments_url": "https://api.github.com/repos/g-plane/markup_fmt/issues/190/comments",
+        "events_url": "https://api.github.com/repos/g-plane/markup_fmt/issues/190/events",
+        "html_url": "https://github.com/g-plane/markup_fmt/issues/190",
+        "id": 3816758602,
+        "node_id": "I_kwDOKf1jVc7jfx1K",
+        "number": 190,
+        "title": "Support different quote styles when nesting",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "labels": [],
+        "state": "open",
+        "locked": false,
+        "assignee": null,
+        "assignees": [],
+        "milestone": null,
+        "comments": 4,
+        "created_at": "2026-01-15T09:37:55Z",
+        "updated_at": "2026-01-16T17:24:02Z",
+        "closed_at": null,
+        "active_lock_reason": null,
+        "sub_issues_summary": {
+          "total": 0,
+          "completed": 0,
+          "percent_completed": 0
+        },
+        "issue_dependencies_summary": {
+          "blocked_by": 0,
+          "total_blocked_by": 0,
+          "blocking": 0,
+          "total_blocking": 0
+        },
+        "body": "For Jinja2, Twig, Nunjucks, Django template code, sometimes we need to embed code into HTTML attribute. This is better:\n\n```twig\n<link href=\"{{ static_url('common/css/_reset.css') }}\" />\n```\n\nbut `markup_fmt` will modify it to:\n\n```twig\n<link href='{{ static_url('common/css/_reset.css') }}' />\n```",
+        "reactions": {
+          "url": "https://api.github.com/repos/g-plane/markup_fmt/issues/190/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "timeline_url": "https://api.github.com/repos/g-plane/markup_fmt/issues/190/timeline",
+        "performed_via_github_app": null,
+        "state_reason": null
+      },
+      "comment": {
+        "url": "https://api.github.com/repos/g-plane/markup_fmt/issues/comments/3753814693",
+        "html_url": "https://github.com/g-plane/markup_fmt/issues/190#issuecomment-3753814693",
+        "issue_url": "https://api.github.com/repos/g-plane/markup_fmt/issues/190",
+        "id": 3753814693,
+        "node_id": "IC_kwDOKf1jVc7fvqql",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-01-15T09:45:46Z",
+        "updated_at": "2026-01-15T09:46:41Z",
+        "body": "Right, I configure to use single quotes. But what I mean is that, when nesting like this:\n\n```\nhref=\"{{ static_url('common/css/_reset.css') }}\"\n```\n\nwe should use different style for the outer and the inner (double or single doesn't matter, just need to be different).\n\nThis will also be Ok:\n\n```\nhref='{{ static_url(\"common/css/_reset.css\") }}'\n```",
+        "reactions": {
+          "url": "https://api.github.com/repos/g-plane/markup_fmt/issues/comments/3753814693/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null
+      }
+    },
+    "public": true,
+    "created_at": "2026-01-15T09:45:46Z"
+  },
+  {
+    "id": "5828163279",
+    "type": "IssuesEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 704471893,
+      "name": "g-plane/markup_fmt",
+      "url": "https://api.github.com/repos/g-plane/markup_fmt"
+    },
+    "payload": {
+      "action": "opened",
+      "issue": {
+        "url": "https://api.github.com/repos/g-plane/markup_fmt/issues/190",
+        "repository_url": "https://api.github.com/repos/g-plane/markup_fmt",
+        "labels_url": "https://api.github.com/repos/g-plane/markup_fmt/issues/190/labels{/name}",
+        "comments_url": "https://api.github.com/repos/g-plane/markup_fmt/issues/190/comments",
+        "events_url": "https://api.github.com/repos/g-plane/markup_fmt/issues/190/events",
+        "html_url": "https://github.com/g-plane/markup_fmt/issues/190",
+        "id": 3816758602,
+        "node_id": "I_kwDOKf1jVc7jfx1K",
+        "number": 190,
+        "title": "Support different quote styles when nesting",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "labels": [],
+        "state": "open",
+        "locked": false,
+        "assignee": null,
+        "assignees": [],
+        "milestone": null,
+        "comments": 4,
+        "created_at": "2026-01-15T09:37:55Z",
+        "updated_at": "2026-01-16T17:24:02Z",
+        "closed_at": null,
+        "active_lock_reason": null,
+        "sub_issues_summary": {
+          "total": 0,
+          "completed": 0,
+          "percent_completed": 0
+        },
+        "issue_dependencies_summary": {
+          "blocked_by": 0,
+          "total_blocked_by": 0,
+          "blocking": 0,
+          "total_blocking": 0
+        },
+        "body": "For Jinja2, Twig, Nunjucks, Django template code, sometimes we need to embed code into HTTML attribute. This is better:\n\n```twig\n<link href=\"{{ static_url('common/css/_reset.css') }}\" />\n```\n\nbut `markup_fmt` will modify it to:\n\n```twig\n<link href='{{ static_url('common/css/_reset.css') }}' />\n```",
+        "reactions": {
+          "url": "https://api.github.com/repos/g-plane/markup_fmt/issues/190/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "timeline_url": "https://api.github.com/repos/g-plane/markup_fmt/issues/190/timeline",
+        "performed_via_github_app": null,
+        "state_reason": null
+      }
+    },
+    "public": true,
+    "created_at": "2026-01-15T09:37:56Z"
+  },
+  {
+    "id": "7492459498",
+    "type": "PushEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 808984300,
+      "name": "hongquan/eventyay-tickets",
+      "url": "https://api.github.com/repos/hongquan/eventyay-tickets"
+    },
+    "payload": {
+      "repository_id": 808984300,
+      "push_id": 29787636893,
+      "ref": "refs/heads/feature/multi-email-address",
+      "head": "0928659ce0a13e3778fb17ed54fe02b2cc6f4293",
+      "before": "6e0b16c29d653f9927326d048aa1bbf17d9e1a94"
+    },
+    "public": true,
+    "created_at": "2026-01-15T08:30:01Z"
+  },
+  {
+    "id": "5826624153",
+    "type": "PullRequestReviewEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "review": {
+        "id": 3664424039,
+        "node_id": "PRR_kwDOA7w_yM7aaqxn",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": null,
+        "commit_id": "35938bb4acb3fff8fe6a5e80ceb8879610dfff08",
+        "submitted_at": "2026-01-15T08:26:33Z",
+        "state": "changes_requested",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1781#pullrequestreview-3664424039",
+        "pull_request_url": "https://api.github.com/repos/fossasia/eventyay/pulls/1781",
+        "_links": {
+          "html": {
+            "href": "https://github.com/fossasia/eventyay/pull/1781#pullrequestreview-3664424039"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/1781"
+          }
+        },
+        "updated_at": "2026-01-15T08:26:33Z"
+      },
+      "pull_request": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1781",
+        "id": 3171592757,
+        "number": 1781,
+        "head": {
+          "ref": "fix/unify-reply-to-handling-across-ticket-talks",
+          "sha": "6e12007040a5aaf0685d8ac1a4d46df3de9f5710",
+          "repo": {
+            "id": 1119066296,
+            "url": "https://api.github.com/repos/MukundC25/eventyay",
+            "name": "eventyay"
+          }
+        },
+        "base": {
+          "ref": "dev",
+          "sha": "abbaeff633f5521893d86b63c70b696cec9ad4ce",
+          "repo": {
+            "id": 62668744,
+            "url": "https://api.github.com/repos/fossasia/eventyay",
+            "name": "eventyay"
+          }
+        }
+      },
+      "action": "created"
+    },
+    "public": true,
+    "created_at": "2026-01-15T08:26:35Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "5826617423",
+    "type": "PullRequestReviewCommentEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 62668744,
+      "name": "fossasia/eventyay",
+      "url": "https://api.github.com/repos/fossasia/eventyay"
+    },
+    "payload": {
+      "action": "created",
+      "comment": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2693418835",
+        "pull_request_review_id": 3664424039,
+        "id": 2693418835,
+        "node_id": "PRRC_kwDOA7w_yM6gik9T",
+        "diff_hunk": "@@ -134,3 +137,36 @@ def mail_send_task(\n     except Exception as exception:  # pragma: no cover\n         logger.exception('Error sending email')\n         raise SendMailException(f'Failed to send an email to {to}: {exception}')\n+\n+\n+def get_reply_to_address(\n+    event,\n+    *,\n+    override=None,\n+    template=None\n+):\n+    \"\"\"\n+    Resolve Reply-To email address with unified precedence.\n+    \n+    Precedence (highest to lowest):\n+    1. Explicit override parameter\n+    2. Template-level reply_to\n+    3. event.mail_settings['reply_to'] (legacy-compatible, checked regardless of SMTP)",
+        "path": "app/eventyay/common/mail.py",
+        "commit_id": "35938bb4acb3fff8fe6a5e80ceb8879610dfff08",
+        "original_commit_id": "35938bb4acb3fff8fe6a5e80ceb8879610dfff08",
+        "user": {
+          "login": "hongquan",
+          "id": 314607,
+          "node_id": "MDQ6VXNlcjMxNDYwNw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/314607?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/hongquan",
+          "html_url": "https://github.com/hongquan",
+          "followers_url": "https://api.github.com/users/hongquan/followers",
+          "following_url": "https://api.github.com/users/hongquan/following{/other_user}",
+          "gists_url": "https://api.github.com/users/hongquan/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/hongquan/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/hongquan/subscriptions",
+          "organizations_url": "https://api.github.com/users/hongquan/orgs",
+          "repos_url": "https://api.github.com/users/hongquan/repos",
+          "events_url": "https://api.github.com/users/hongquan/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/hongquan/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "body": "We don't need legacy compatible, because we didn't have old event data to keep compatibility.",
+        "created_at": "2026-01-15T08:26:18Z",
+        "updated_at": "2026-01-15T08:26:33Z",
+        "html_url": "https://github.com/fossasia/eventyay/pull/1781#discussion_r2693418835",
+        "pull_request_url": "https://api.github.com/repos/fossasia/eventyay/pulls/1781",
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2693418835"
+          },
+          "html": {
+            "href": "https://github.com/fossasia/eventyay/pull/1781#discussion_r2693418835"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/fossasia/eventyay/pulls/1781"
+          }
+        },
+        "reactions": {
+          "url": "https://api.github.com/repos/fossasia/eventyay/pulls/comments/2693418835/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "original_position": 44,
+        "position": 1,
+        "subject_type": "line"
+      },
+      "pull_request": {
+        "url": "https://api.github.com/repos/fossasia/eventyay/pulls/1781",
+        "id": 3171592757,
+        "number": 1781,
+        "head": {
+          "ref": "fix/unify-reply-to-handling-across-ticket-talks",
+          "sha": "6e12007040a5aaf0685d8ac1a4d46df3de9f5710",
+          "repo": {
+            "id": 1119066296,
+            "url": "https://api.github.com/repos/MukundC25/eventyay",
+            "name": "eventyay"
+          }
+        },
+        "base": {
+          "ref": "dev",
+          "sha": "abbaeff633f5521893d86b63c70b696cec9ad4ce",
+          "repo": {
+            "id": 62668744,
+            "url": "https://api.github.com/repos/fossasia/eventyay",
+            "name": "eventyay"
+          }
+        }
+      }
+    },
+    "public": true,
+    "created_at": "2026-01-15T08:26:18Z",
+    "org": {
+      "id": 6295529,
+      "login": "fossasia",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/fossasia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6295529?"
+    }
+  },
+  {
+    "id": "7488262904",
+    "type": "PushEvent",
+    "actor": {
+      "id": 314607,
+      "login": "hongquan",
+      "display_login": "hongquan",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/hongquan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/314607?"
+    },
+    "repo": {
+      "id": 1134416701,
+      "name": "hongquan/SocialCodingReport",
+      "url": "https://api.github.com/repos/hongquan/SocialCodingReport"
+    },
+    "payload": {
+      "repository_id": 1134416701,
+      "push_id": 29783433371,
+      "ref": "refs/heads/main",
+      "head": "8db4b3833b144033f5a5acd3912e07fe22f4cd72",
+      "before": "225c266888940fb98560e2026dc0934560470301"
+    },
+    "public": true,
+    "created_at": "2026-01-15T05:17:40Z"
+  }
+]

@@ -23,12 +23,37 @@ class TaskType(StrEnum):
 # - Created Issue: If current user is the author of the issue.
 # We don't care about other actions.
 class ActivityAction(StrEnum):
-    CREATED = 'Created'
-    REVIEWED = 'Reviewed'
+    CREATED_ISSUE = 'created-issue'
+    CREATED_PR = 'created-pr'
+    REVIEWED_PR = 'reviewed-pr'
+    UPDATED_ISSUE = 'updated-issue'
 
 
-class GitHubEventType(StrEnum):
-    PULL_REQUEST = 'PullRequestEvent'
-    PULL_REQUEST_REVIEW = 'PullRequestReviewEvent'
-    ISSUE = 'IssuesEvent'
+class GHState(StrEnum):
+    OPEN = 'open'
+    CLOSED = 'closed'
+
+
+# Ref: https://docs.github.com/en/rest/activity/events?apiVersion=2022-11-28#list-public-events-for-a-user
+class GHEventType(StrEnum):
+    CREATE = 'CreateEvent'
+    DELETE = 'DeleteEvent'
+    DISCUSSION = 'DiscussionEvent'
+    ISSUES = 'IssuesEvent'
     ISSUE_COMMENT = 'IssueCommentEvent'
+    FORK = 'ForkEvent'
+    GOLLUM = 'GollumEvent'
+    MEMBER = 'MemberEvent'
+    PUBLIC = 'PublicEvent'
+    PUSH = 'PushEvent'
+    PULL_REQUEST = 'PullRequestEvent'
+    PULL_REQUEST_REVIEW_COMMENT = 'PullRequestReviewCommentEvent'
+    PULL_REQUEST_REVIEW = 'PullRequestReviewEvent'
+    COMMIT_COMMENT = 'CommitCommentEvent'
+    RELEASE = 'ReleaseEvent'
+    WATCH = 'WatchEvent'
+
+
+class DateNamedRange(StrEnum):
+    TODAY = 'today'
+    YESTERDAY = 'yesterday'
