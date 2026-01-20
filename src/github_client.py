@@ -35,6 +35,7 @@ class GitHubClient(GObject.Object):
         username: str,
         since_date: datetime,
         until_date: datetime,
+        token: str | None = None,
     ):
         """
         Fetch public events for a user.
@@ -44,7 +45,11 @@ class GitHubClient(GObject.Object):
 
         msg = Soup.Message.new(HTTPMethod.GET, url)
         msg.get_request_headers().append('User-Agent', self.user_agent)
-        # We are ignoring the token for now, because we focus on public events first.
+
+        # Priority: explicit token > env var > none
+        auth_token = token or self.token
+        if auth_token:
+            msg.get_request_headers().append('Authorization', f'Bearer {auth_token}')
 
         log.info('Fetching events for {} since {} until {}', username, since_date, until_date)
         self.session.send_and_read_async(
@@ -55,7 +60,9 @@ class GitHubClient(GObject.Object):
             (username, since_date, until_date),
         )
 
-    def on_events_fetching_done(self, session: Soup.Session, result: Gio.AsyncResult, user_data: tuple[str, datetime, datetime]):
+    def on_events_fetching_done(
+        self, session: Soup.Session, result: Gio.AsyncResult, user_data: tuple[str, datetime, datetime]
+    ):
         username, since_date, until_date = user_data
         # Call `send_and_read_finish` first because it lets us know if there is a network error
         try:
@@ -79,7 +86,9 @@ class GitHubClient(GObject.Object):
         items = []
         for gh_event in gh_events:
             if gh_event.created_at < since_date:
-                log.debug('Skipping event {} before since_date: {} < {}', gh_event.type, gh_event.created_at, since_date)
+                log.debug(
+                    'Skipping event {} before since_date: {} < {}', gh_event.type, gh_event.created_at, since_date
+                )
                 continue
             if gh_event.created_at > until_date:
                 log.debug('Skipping event {} after until_date: {} > {}', gh_event.type, gh_event.created_at, until_date)

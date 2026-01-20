@@ -20,6 +20,7 @@ class PreferencesPage(Adw.Bin):
     entry_add_repo: Adw.EntryRow = Gtk.Template.Child()
     repos_list_box: Gtk.ListBox = Gtk.Template.Child()
     entry_add_account: Adw.EntryRow = Gtk.Template.Child()
+    entry_github_token: Adw.PasswordEntryRow = Gtk.Template.Child()
     accounts_list_box: Gtk.ListBox = Gtk.Template.Child()
 
     def __init__(self, **kwargs: Any):
@@ -120,8 +121,9 @@ class PreferencesPage(Adw.Bin):
             entry.set_text('')
 
     @Gtk.Template.Callback()
-    def on_add_account(self, entry: Adw.EntryRow):
-        text = entry.get_text().strip()
+    def on_add_account(self, btn: Gtk.Button):
+        text = self.entry_add_account.get_text().strip()
+        token = self.entry_github_token.get_text().strip() or None
         if text:
             # Check duplicate
             for i in range(self.account_store.get_n_items()):
@@ -130,7 +132,7 @@ class PreferencesPage(Adw.Bin):
                     return
 
             # Add logic
-            new_account = Account(username=text, host=Host.GITHUB)
+            new_account = Account(username=text, host=Host.GITHUB, token=token)
 
             accounts = list(self.config.load_accounts())
             if new_account not in accounts:
@@ -139,7 +141,8 @@ class PreferencesPage(Adw.Bin):
 
                 self.account_store.append(AccountItem(username=text, host=Host.GITHUB))
 
-            entry.set_text('')
+            self.entry_add_account.set_text('')
+            self.entry_github_token.set_text('')
 
     def on_remove_repo(self, action, parameter):
         repo_display_name = parameter.get_string()

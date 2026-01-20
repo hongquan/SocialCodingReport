@@ -16,7 +16,6 @@ class ActivityType(StrEnum):
     PR = 'PR'
 
 
-
 @dataclass
 class RepoInfo:
     name: str
@@ -28,6 +27,7 @@ class RepoInfo:
 class Account:
     host: Host
     username: str
+    token: str | None = None
 
 
 @dataclass
@@ -50,7 +50,7 @@ class InvolvementActivity:
         match event:
             case GHPullRequestEvent(payload=p):
                 task_type = TaskType.PR
-                action =  ActivityAction.CREATED_PR
+                action = ActivityAction.CREATED_PR
                 # This payload doesn't have title directly, so we set empty for now.
                 title = ''
                 api_url = p.pull_request.url
@@ -140,7 +140,6 @@ class ActivityItem(GObject.Object):
     display_text = GObject.Property(type=str)
     type_char = GObject.Property(type=str)
     author = GObject.Property(type=str)
-
 
     @classmethod
     def from_activity_data(cls, data: InvolvementActivity) -> Self:

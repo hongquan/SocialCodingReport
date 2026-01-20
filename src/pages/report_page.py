@@ -88,19 +88,21 @@ class ReportPage(Adw.Bin):
             repo_item = RepoItem(name=repo_info.name, owner=repo_info.owner)
             self.repo_store.append(repo_item)
 
-        # Get GitHub username
+        # Get GitHub username and token
         accounts = self.config.load_accounts()
-        github_username = next((a.username for a in accounts if a.host == Host.GITHUB), None)
+        github_account = next((a for a in accounts if a.host == Host.GITHUB), None)
 
-        if not github_username:
+        if not github_account:
             log.error('No GitHub account configured.')
             # Clear loading state
             self.is_loading = False
             return
 
-        self.client.fetch_user_events(github_username, since_date, until_date)
+        self.client.fetch_user_events(github_account.username, since_date, until_date, token=github_account.token)
 
-    def on_activities_loaded(self, client: GitHubClient, username: str, activities: Sequence[InvolvementActivity], error: str):
+    def on_activities_loaded(
+        self, client: GitHubClient, username: str, activities: Sequence[InvolvementActivity], error: str
+    ):
         # Clear loading state for ALL repos
         self.is_loading = False
 

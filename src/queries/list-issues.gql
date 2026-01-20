@@ -1,0 +1,30 @@
+query($owner: String!, $name: String!) {
+  repository(owner: $owner, name: $name) {
+    issues(last: 10) {
+      nodes {
+        id
+        number
+        title
+      }
+      pageInfo {
+        ...pageInfoFields
+      }
+    }
+    pullRequests(last: 10) {
+      nodes {
+        id
+        number
+        title
+      }
+      pageInfo {        
+        ...pageInfoFields
+      }
+    }
+  }
+}
+
+fragment pageInfoFields on PageInfo {
+  hasNextPage
+  startCursor
+  endCursor
+}

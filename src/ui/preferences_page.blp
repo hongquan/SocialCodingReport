@@ -21,8 +21,23 @@ template $PreferencesPage: Adw.Bin {
         Adw.EntryRow entry_add_account {
           title: "Add Account";
           text: "";
-          show-apply-button: true;
-          apply => $on_add_account();
+        }
+
+        Adw.PasswordEntryRow entry_github_token {
+          title: "GitHub Token (Optional)";
+          text: "";
+        }
+
+        Button {
+          label: "Add Account";
+          halign: center;
+          margin-top: 12;
+
+          styles [
+            "suggested-action",
+          ]
+
+          clicked => $on_add_account();
         }
       }
 
