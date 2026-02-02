@@ -1,6 +1,8 @@
+import json
 import os
 from datetime import datetime
 from http import HTTPMethod
+from typing import Any
 from urllib.parse import quote
 
 import gi
@@ -22,6 +24,7 @@ log = Logger(__name__)
 class GitHubClient(GObject.Object):
     __gsignals__ = {
         'user-activities-fetched': (GObject.SignalFlags.RUN_FIRST, None, (str, object, str)),
+        'graphql-query-done': (GObject.SignalFlags.RUN_FIRST, None, (str, object)),
     }
 
     def __init__(self):
@@ -102,3 +105,49 @@ class GitHubClient(GObject.Object):
                     log.debug('Ignoring event type: {}', gh_event.type)
         self.emit('user-activities-fetched', username, items, '')
         log.info('Processed {} involvement activities for {}', len(items), username)
+
+    def run_graphql_query(self, query: str, variables: dict[str, Any], user_data: Any = None):
+        url = 'https://api.github.com/graphql'
+        msg = Soup.Message.new(HTTPMethod.POST, url)
+        msg.get_request_headers().append('User-Agent', self.user_agent)
+
+        # Priority: env var (already loaded in self.token)
+        # Note: We don't have token argument here, assuming self.token is sufficient or we should rely on it.
+        # Check fetch_user_events logic: `auth_token = token or self.token`.
+        # Here we only use self.token for simplicity as we don't pass token around much besides initial fetch.
+        if self.token:
+            msg.get_request_headers().append('Authorization', f'Bearer {self.token}')
+
+        body = {'query': query, 'variables': variables}
+        msg.set_request_body_from_bytes('application/json', GLib.Bytes.new(json.dumps(body).encode('utf-8')))
+
+        log.info('Running GraphQL query...')
+        self.session.send_and_read_async(
+            msg,
+            GLib.PRIORITY_DEFAULT,
+            None,
+            self.on_graphql_query_done,
+            user_data,
+        )
+
+    def on_graphql_query_done(self, session: Soup.Session, result: Gio.AsyncResult, user_data: Any):
+        try:
+            bytes_data = session.send_and_read_finish(result)
+        except GLib.Error as e:
+            log.error('Network error during GraphQL fetch: {}', e)
+            self.emit('graphql-query-done', '', user_data)
+            return
+
+        msg = session.get_async_result_message(result)
+        status_code = msg.get_status()
+        if status_code != Soup.Status.OK:
+            log.error('GitHub API (GraphQL) returned status code: {}', status_code)
+            self.emit('graphql-query-done', '', user_data)
+            return
+
+        # Emit raw string data, let receiver handle JSON parsing
+        raw_data = bytes_data.get_data()
+        if raw_data is None:
+            self.emit('graphql-query-done', '', user_data)
+        else:
+            self.emit('graphql-query-done', raw_data.decode('utf-8'), user_data)

@@ -1,7 +1,8 @@
 from collections.abc import Sequence
-from typing import Any, Self
+from typing import Any, Self, TypedDict
 
 import gi
+from pydantic import ValidationError
 
 
 gi.require_version('Gtk', '4.0')
@@ -17,6 +18,7 @@ from ..consts import ActivityAction, DateNamedRange, Host, TaskType
 from ..github_client import GitHubClient
 from ..models import ActivityItem, InvolvementActivity, RepoInfo, RepoItem, ReportActivity
 from ..reporting import generate_report
+from ..schemas import GHGraphQLNode, GHGraphQLResponse
 
 
 log = Logger(__name__)
@@ -41,7 +43,12 @@ class ReportPage(Adw.Bin):
 
         self.client = GitHubClient()
         self.client.connect('user-activities-fetched', self.on_activities_loaded)
+        self.client.connect('graphql-query-done', self.on_titles_fetched)
         self.config = ConfigManager()
+
+        resource_path = '/vn/ququ/SocialCodingReport/queries/list-issues.gql'
+        bytes_data = Gio.resources_lookup_data(resource_path, Gio.ResourceLookupFlags.NONE)
+        self.graphql_query = bytes_data.get_data().decode('utf-8')
 
         # Initial load
         GLib.idle_add(self.load_data)
@@ -120,7 +127,54 @@ class ReportPage(Adw.Bin):
                 item = ActivityItem.from_activity_data(act)
                 self.activity_store.append(item)
 
+        # Check for missing titles
+        # missing_items = []
+        # node_ids = []
+        # for i in range(self.activity_store.get_n_items()):
+        #     item = self.activity_store.get_item(i)
+        #     if not item.title and item.node_id:
+        #         missing_items.append(item)
+        #         node_ids.append(item.node_id)
+
+        # if node_ids:
+        #     log.info('Fetching titles for {} items via GraphQL...', len(node_ids))
+        #     self.client.run_graphql_query(self.graphql_query, {'ids': node_ids}, missing_items)
+
         log.info('Loaded {} activities for user {}', self.activity_store.get_n_items(), username)
+
+    def on_titles_fetched(self, client: GitHubClient, response_json: str, items: list[ActivityItem]):
+        if not response_json:
+            log.warning('GraphQL response empty')
+            return
+
+        # Use TypedDict for on-the-fly wrapper definition
+        Wrapper = TypedDict('Wrapper', {'nodes': list[GHGraphQLNode | None]})  # noqa: UP013
+
+        try:
+            # We are mimicking the blog post's usage of GenericResponse[Wrapper]
+            response = GHGraphQLResponse[Wrapper].model_validate_json(response_json)
+        except ValidationError as e:
+            log.error('GraphQL validation failed: {}', e)
+            return
+
+        # Access data typesafely (at least from Pydantic's perspective of validation)
+        # response.data is validated to match Wrapper structure
+        nodes = response.data['nodes']
+
+        # Map id -> title
+        title_map = {}
+        if nodes:
+            for node in nodes:
+                if node and node.id and node.title:
+                    title_map[node.id] = node.title
+
+        update_count = 0
+        for item in items:
+            if item.node_id in title_map:
+                item.title = title_map[item.node_id]
+                update_count += 1
+
+        log.info('Updated titles for {} items', update_count)
 
     @Gtk.Template.Callback()
     def on_refresh(self, btn: Gtk.Button):

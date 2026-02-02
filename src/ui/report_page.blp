@@ -111,7 +111,7 @@ template $ReportPage: Adw.Bin {
             factory: BuilderListItemFactory {
               template ListItem {
                 child: Label {
-                  label: bind template.item as <$ActivityItem>.title;
+                  label: bind template.item as <$ActivityItem>.display_title;
                   use-markup: false;
                   xalign: 0;
                   ellipsize: end;

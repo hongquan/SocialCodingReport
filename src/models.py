@@ -141,11 +141,22 @@ class ActivityItem(GObject.Object):
     type_char = GObject.Property(type=str)
     author = GObject.Property(type=str)
 
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+        self.connect('notify::title', self.on_title_changed)
+
+    def on_title_changed(self, *args):
+        self.notify('display-title')
+
+    @GObject.Property(type=str)
+    def display_title(self) -> str:
+        return self.title if self.title else '(No Title)'
+
     @classmethod
     def from_activity_data(cls, data: InvolvementActivity) -> Self:
         type_char = 'I' if data.task_type == TaskType.ISSUE else 'P'
         return cls(
-            title=data.title or '(No Title)',
+            title=data.title or '',
             url=data.html_url,
             task_type=str(data.task_type),
             type_char=type_char,

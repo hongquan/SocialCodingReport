@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Generic, Literal, TypeVar
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, with_config
@@ -142,3 +142,15 @@ GHUserEvent = Annotated[
     GHPushEvent | GHPullRequestEvent | GHPullRequestReviewEvent | GHIssuesEvent | GHUncaredEvent,
     Field(discriminator='type'),
 ]
+
+
+class GHGraphQLNode(BaseModel):
+    id: str
+    title: str | None = None
+
+
+MT = TypeVar('MT')
+
+
+class GHGraphQLResponse(BaseModel, Generic[MT]):
+    data: MT
