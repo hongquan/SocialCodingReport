@@ -40,6 +40,7 @@ class InvolvementActivity:
     author: str
     created_at: datetime
     repo_info: RepoInfo
+    database_id: int | None = None
 
     @property
     def repo_long_name(self) -> str:
@@ -55,6 +56,7 @@ class InvolvementActivity:
                 title = ''
                 api_url = p.pull_request.url
                 html_url = p.pull_request.html_url
+                database_id = p.pull_request.id
             case GHPullRequestReviewEvent(payload=p):
                 task_type = TaskType.PR
                 action = ActivityAction.REVIEWED_PR
@@ -62,12 +64,14 @@ class InvolvementActivity:
                 title = ''
                 api_url = p.pull_request.url
                 html_url = p.pull_request.html_url
+                database_id = p.pull_request.id
             case GHIssuesEvent(payload=p):
                 task_type = TaskType.ISSUE
                 action = ActivityAction.CREATED_ISSUE if p.action == 'opened' else ActivityAction.UPDATED_ISSUE
                 title = p.issue.title
                 api_url = p.issue.url
                 html_url = p.issue.html_url
+                database_id = p.issue.id
             case _:
                 raise ValueError('Unsupported event type for InvolvementActivity')
         return cls(
@@ -83,6 +87,7 @@ class InvolvementActivity:
                 owner=event.repo.owner,
                 host=Host.GITHUB,
             ),
+            database_id=database_id,
         )
 
 
@@ -135,11 +140,14 @@ class ActivityItem(GObject.Object):
     action = GObject.Property(type=str)
     repo_long_name = GObject.Property(type=str)
     repo_name = GObject.Property(type=str)
+    repo_owner = GObject.Property(type=str)
     created_at = GObject.Property(type=object)
     selected = GObject.Property(type=bool, default=True)
     display_text = GObject.Property(type=str)
     type_char = GObject.Property(type=str)
     author = GObject.Property(type=str)
+    database_id = GObject.Property(type=int)
+    api_url = GObject.Property(type=str)
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
@@ -158,11 +166,14 @@ class ActivityItem(GObject.Object):
         return cls(
             title=data.title or '',
             url=data.html_url,
+            api_url=data.api_url,
             task_type=str(data.task_type),
             type_char=type_char,
             action=data.action.value,
             created_at=data.created_at,
             repo_name=data.repo_info.name,
             repo_long_name=data.repo_long_name,
+            repo_owner=data.repo_info.owner,
             author=data.author,
+            database_id=data.database_id,
         )

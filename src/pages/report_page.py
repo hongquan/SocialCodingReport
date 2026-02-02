@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import Any, Self, TypedDict
+from typing import Any, Self
 
 import gi
 from pydantic import ValidationError
@@ -18,10 +18,14 @@ from ..consts import ActivityAction, DateNamedRange, Host, TaskType
 from ..github_client import GitHubClient
 from ..models import ActivityItem, InvolvementActivity, RepoInfo, RepoItem, ReportActivity
 from ..reporting import generate_report
-from ..schemas import GHGraphQLNode, GHGraphQLResponse
+from ..schemas import GHGraphQLConnection, GHGraphQLResponse
 
 
 log = Logger(__name__)
+
+
+def extract_titles_from_connection(connection: GHGraphQLConnection) -> dict[int, str]:
+    return {node.databaseId: node.title for node in connection.nodes if node.title}
 
 
 @Gtk.Template.from_resource('/vn/ququ/SocialCodingReport/gtk/report_page.ui')
@@ -128,53 +132,67 @@ class ReportPage(Adw.Bin):
                 self.activity_store.append(item)
 
         # Check for missing titles
-        # missing_items = []
-        # node_ids = []
-        # for i in range(self.activity_store.get_n_items()):
-        #     item = self.activity_store.get_item(i)
-        #     if not item.title and item.node_id:
-        #         missing_items.append(item)
-        #         node_ids.append(item.node_id)
+        missing_items_by_repo: dict[tuple[str, str], list[ActivityItem]] = {}
+        for item in self.activity_store:
+            # Check for no title and valid database_id
+            if not item.title and item.database_id:
+                key = (item.repo_owner, item.repo_name)
+                if key not in missing_items_by_repo:
+                    missing_items_by_repo[key] = []
+                missing_items_by_repo[key].append(item)
 
-        # if node_ids:
-        #     log.info('Fetching titles for {} items via GraphQL...', len(node_ids))
-        #     self.client.run_graphql_query(self.graphql_query, {'ids': node_ids}, missing_items)
+        for (owner, name), items in missing_items_by_repo.items():
+            if not items:
+                continue
+
+            # Determine distinct 'since' date for this batch.
+            # Ideally we want the earliest created_at of the missing items.
+            # But converting ActivityItem.created_at (which is object/datetime) to ISO string is needed.
+            min_date = min(item.created_at for item in items if isinstance(item.created_at, datetime))
+            # Subtract a bit of buffer (e.g. 1 minute) just in case
+            since_iso = (min_date - timedelta(minutes=1)).isoformat()
+
+            log.info('Fetching missing titles for {}/{} since {}...', owner, name, since_iso)
+
+            # Pass repo key and items to callback
+            self.client.run_graphql_query(
+                self.graphql_query, {'owner': owner, 'name': name, 'since': since_iso}, (items, owner, name)
+            )
 
         log.info('Loaded {} activities for user {}', self.activity_store.get_n_items(), username)
 
-    def on_titles_fetched(self, client: GitHubClient, response_json: str, items: list[ActivityItem]):
-        if not response_json:
-            log.warning('GraphQL response empty')
-            return
+    def on_titles_fetched(
+        self, client: GitHubClient, response_json: str, user_data: tuple[list[ActivityItem], str, str]
+    ):
+        items, owner, name = user_data
 
-        # Use TypedDict for on-the-fly wrapper definition
-        Wrapper = TypedDict('Wrapper', {'nodes': list[GHGraphQLNode | None]})  # noqa: UP013
+        if not response_json:
+            log.warning('GraphQL response empty for {}/{}', owner, name)
+            return
 
         try:
-            # We are mimicking the blog post's usage of GenericResponse[Wrapper]
-            response = GHGraphQLResponse[Wrapper].model_validate_json(response_json)
+            response = GHGraphQLResponse.model_validate_json(response_json)
         except ValidationError as e:
-            log.error('GraphQL validation failed: {}', e)
+            log.error('GraphQL validation failed for {}/{}: {}', owner, name, e)
             return
 
-        # Access data typesafely (at least from Pydantic's perspective of validation)
-        # response.data is validated to match Wrapper structure
-        nodes = response.data['nodes']
+        repo_data = response.data.repository
 
-        # Map id -> title
-        title_map = {}
-        if nodes:
-            for node in nodes:
-                if node and node.id and node.title:
-                    title_map[node.id] = node.title
+        # Collect databaseId -> title map
+        title_map = extract_titles_from_connection(repo_data.issues)
+        title_map.update(extract_titles_from_connection(repo_data.pullRequests))
 
         update_count = 0
         for item in items:
-            if item.node_id in title_map:
-                item.title = title_map[item.node_id]
+            if item.database_id in title_map:
+                item.title = title_map[item.database_id]
                 update_count += 1
+            else:
+                log.debug(
+                    'Title not found for item {} (db_id: {}) in GraphQL response', item.repo_long_name, item.database_id
+                )
 
-        log.info('Updated titles for {} items', update_count)
+        log.info('Updated titles for {}/{} items: {}/{} found', owner, name, update_count, len(items))
 
     @Gtk.Template.Callback()
     def on_refresh(self, btn: Gtk.Button):
@@ -183,10 +201,8 @@ class ReportPage(Adw.Bin):
     @Gtk.Template.Callback()
     def on_generate(self, btn: Gtk.Button):
         selected_items = []
-        n_items = self.activity_store.get_n_items()
-        for i in range(n_items):
+        for i, item in enumerate(self.activity_store):
             if self.selection_model.is_selected(i):
-                item = self.activity_store.get_item(i)
                 selected_items.append(item)
 
         if not selected_items:
@@ -195,25 +211,20 @@ class ReportPage(Adw.Bin):
 
         activities = []
         for item in selected_items:
-            # Reconstruct ActivityData
-            # We assume GitHub host for now or we could store it in ActivityItem if needed.
-            if '/' in item.repo_name:
-                owner, name = item.repo_name.split('/', 1)
-            else:
-                owner, name = '', item.repo_name
-
-            repo_info = RepoInfo(name=name, owner=owner, host=Host.GITHUB)
+            # Reconstruct ActivityData and RepoInfo
+            # We assume GitHub host for now.
+            repo_info = RepoInfo(name=item.repo_name, owner=item.repo_owner, host=Host.GITHUB)
 
             activity = ReportActivity(
                 title=item.title,
-                api_url=item.url,
-                task_type=TaskType(
-                    item.task_type
-                ),  # Convert string back to Enum? Or check if ActivityData expects Enum.
+                api_url=item.api_url,
+                html_url=item.url,
+                task_type=TaskType(item.task_type),
+                action=ActivityAction(item.action),
+                author=item.author,
                 created_at=item.created_at,
                 repo_info=repo_info,
-                author=item.author,
-                action=ActivityAction(item.action),
+                database_id=item.database_id,
             )
             activities.append(activity)
 

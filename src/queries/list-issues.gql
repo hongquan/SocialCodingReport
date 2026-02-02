@@ -1,14 +1,32 @@
-query($ids: [ID!]!) {
-  nodes(ids: $ids) {
-    ... on Issue {
-      id
-      number
-      title
+query($owner: String!, $name: String!, $since: DateTime!) {
+  repository(owner: $owner, name: $name) {
+    issues(filterBy: { since: $since }, last: 10) {
+      nodes {
+        id
+        number
+        title
+        databaseId
+      }
+      pageInfo {
+        ...pageInfoFields
+      }
     }
-    ... on PullRequest {
-      id
-      number
-      title
+    pullRequests(last: 10) {
+      nodes {
+        id
+        number
+        title
+        databaseId
+      }
+      pageInfo {
+        ...pageInfoFields
+      }
     }
   }
+}
+
+fragment pageInfoFields on PageInfo {
+  hasNextPage
+  startCursor
+  endCursor
 }

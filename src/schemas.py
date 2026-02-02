@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Annotated, Generic, Literal, TypeVar
+from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, with_config
@@ -144,13 +144,37 @@ GHUserEvent = Annotated[
 ]
 
 
-class GHGraphQLNode(BaseModel):
-    id: str
+@dataclass
+class GHGraphQLDatabaseIdNode:
+    id: str  # GraphQL ID (node_id)
+    databaseId: int
+    number: int
     title: str | None = None
 
 
-MT = TypeVar('MT')
+@dataclass
+class GHGraphQLPageInfo:
+    hasNextPage: bool
+    startCursor: str | None = None
+    endCursor: str | None = None
 
 
-class GHGraphQLResponse(BaseModel, Generic[MT]):
-    data: MT
+@dataclass
+class GHGraphQLConnection:
+    nodes: tuple[GHGraphQLDatabaseIdNode, ...]
+    pageInfo: GHGraphQLPageInfo
+
+
+@dataclass
+class GHGraphQLRepository:
+    issues: GHGraphQLConnection
+    pullRequests: GHGraphQLConnection
+
+
+@dataclass
+class GHGraphQLRepositoryWrapper:
+    repository: GHGraphQLRepository
+
+
+class GHGraphQLResponse(BaseModel):
+    data: GHGraphQLRepositoryWrapper

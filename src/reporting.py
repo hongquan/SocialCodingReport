@@ -33,12 +33,12 @@ def group_activities_by_repo(activities: Sequence[ReportActivity]) -> dict[str, 
                 created_issues=[],
             )
         if activity.task_type == TaskType.PR:
-            if activity.action == ActivityAction.CREATED:
+            if activity.action == ActivityAction.CREATED_PR:
                 grouped[activity.repo_long_name].created_prs.append(activity)
-            elif activity.action == ActivityAction.REVIEWED:
+            elif activity.action == ActivityAction.REVIEWED_PR:
                 grouped[activity.repo_long_name].reviewed_prs.append(activity)
         elif activity.task_type == TaskType.ISSUE:
-            if activity.action == ActivityAction.CREATED:
+            if activity.action == ActivityAction.CREATED_ISSUE:
                 grouped[activity.repo_long_name].created_issues.append(activity)
 
 
