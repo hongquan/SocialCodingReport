@@ -5,11 +5,15 @@ import gi
 
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
-from gi.repository import Adw, Gio, GLib, Gtk
+from gi.repository import Adw, GObject, Gio, GLib, Gtk
+from logbook import Logger
 
 from ..config import ConfigManager
 from ..consts import Host
 from ..models import Account, AccountItem, RepoInfo, RepoItem
+
+
+log = Logger(__name__)
 
 
 @Gtk.Template.from_resource('/vn/ququ/SocialCodingReport/gtk/preferences_page.ui')
@@ -65,14 +69,20 @@ class PreferencesPage(Adw.Bin):
         return row
 
     def create_account_row(self, item: AccountItem) -> Gtk.Widget:
-        row = Adw.ActionRow(title=item.username, activatable=False)
+        row = Adw.ActionRow(activatable=True)
+        item.bind_property('username', row, 'title', GObject.BindingFlags.SYNC_CREATE)
+        row.set_subtitle('Click to edit')
+
+        edit_icon = Gtk.Image(icon_name='document-edit-symbolic')
+        edit_icon.set_valign(Gtk.Align.CENTER)
+        row.add_suffix(edit_icon)
 
         btn = Gtk.Button(icon_name='user-trash-symbolic')
         btn.add_css_class('flat')
         btn.set_valign(Gtk.Align.CENTER)
 
         btn.set_action_name('preferences.remove-account')
-        btn.set_action_target_value(GLib.Variant.new_string(item.username))
+        btn.set_action_target_value(GLib.Variant.new_string(item.host))
 
         row.add_suffix(btn)
         return row
@@ -87,7 +97,7 @@ class PreferencesPage(Adw.Bin):
         self.account_store.remove_all()
         accounts = self.config.load_accounts()
         for account in accounts:
-            self.account_store.append(AccountItem(username=account.username, host=account.host))
+            self.account_store.append(AccountItem(username=account.username, host=account.host, token=account.token))
 
     @Gtk.Template.Callback()
     def on_add_repo(self, entry: Adw.EntryRow):
@@ -122,27 +132,59 @@ class PreferencesPage(Adw.Bin):
 
     @Gtk.Template.Callback()
     def on_add_account(self, btn: Gtk.Button):
-        text = self.entry_add_account.get_text().strip()
+        username = self.entry_add_account.get_text().strip()
         token = self.entry_github_token.get_text().strip() or None
-        if text:
-            # Check duplicate
-            for i in range(self.account_store.get_n_items()):
-                item = self.account_store.get_item(i)
-                if item.username == text:
-                    return
+        host = Host.GITHUB  # Assuming GitHub for these fields for now
 
-            # Add logic
-            new_account = Account(username=text, host=Host.GITHUB, token=token)
+        if not username:
+            return
 
-            accounts = list(self.config.load_accounts())
-            if new_account not in accounts:
-                accounts.append(new_account)
-                self.config.save_accounts(accounts)
+        # Load current accounts
+        accounts = list(self.config.load_accounts())
+        existing_account = next((a for a in accounts if a.host == host), None)
 
-                self.account_store.append(AccountItem(username=text, host=Host.GITHUB))
+        if existing_account:
+            # Update existing
+            existing_account.username = username
+            existing_account.token = token
+            log.info('Updated account for {}: {}', host, username)
+        else:
+            # Add new
+            new_account = Account(username=username, host=host, token=token)
+            accounts.append(new_account)
+            log.info('Added account for {}: {}', host, username)
 
-            self.entry_add_account.set_text('')
-            self.entry_github_token.set_text('')
+        self.config.save_accounts(accounts)
+
+        # Update UI store
+        found_in_store = False
+        for i in range(self.account_store.get_n_items()):
+            item = self.account_store.get_item(i)
+            if item.host == host:
+                item.username = username
+                item.token = token or ''
+                found_in_store = True
+                break
+
+        if not found_in_store:
+            self.account_store.append(AccountItem(username=username, host=host, token=token))
+
+        self.entry_add_account.set_text('')
+        self.entry_github_token.set_text('')
+
+    @Gtk.Template.Callback()
+    def on_account_activated(self, list_box: Gtk.ListBox, row: Adw.ActionRow):
+        # We need to get the item from the row.
+        # Adw.ActionRow doesn't store the item directly unless we set it or use indexes.
+        # But we can find the index and get from store.
+        index = row.get_index()
+        item = self.account_store.get_item(index)
+        if item:
+            self.entry_add_account.set_text(item.username)
+            self.entry_github_token.set_text(item.token)
+            # Set focus to the token entry to encourage update if needed
+            self.entry_github_token.grab_focus()
+            log.info('Selected account for editing: {}', item.username)
 
     def on_remove_repo(self, action, parameter):
         repo_display_name = parameter.get_string()
@@ -164,16 +206,16 @@ class PreferencesPage(Adw.Bin):
         self.config.save_repositories(repos)
 
     def on_remove_account(self, action, parameter):
-        username = parameter.get_string()
+        host = parameter.get_string()
 
         # Remove from store
         for i in range(self.account_store.get_n_items()):
             item = self.account_store.get_item(i)
-            if item.username == username:
+            if item.host == host:
                 self.account_store.remove(i)
                 break
 
         # Remove from config
         accounts = list(self.config.load_accounts())
-        accounts = [a for a in accounts if a.username != username]
+        accounts = [a for a in accounts if a.host != host]
         self.config.save_accounts(accounts)

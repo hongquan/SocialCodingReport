@@ -19,7 +19,7 @@ template $PreferencesPage: Adw.Bin {
         description: "Manage GitHub accounts.";
 
         Adw.EntryRow entry_add_account {
-          title: "Add Account";
+          title: "Username";
           text: "";
         }
 
@@ -29,7 +29,7 @@ template $PreferencesPage: Adw.Bin {
         }
 
         Button {
-          label: "Add Account";
+          label: "Save Account";
           halign: center;
           margin-top: 12;
 
@@ -44,6 +44,7 @@ template $PreferencesPage: Adw.Bin {
       Adw.PreferencesGroup accounts_group {
         Gtk.ListBox accounts_list_box {
           selection-mode: none;
+          row-activated => $on_account_activated();
 
           styles [
             "boxed-list",

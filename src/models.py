@@ -124,11 +124,13 @@ class AccountItem(GObject.Object):
 
     username = GObject.Property(type=str)
     host = GObject.Property(type=str, default='github')
+    token = GObject.Property(type=str)
 
-    def __init__(self, username: str, host: Host = Host.GITHUB, **kwargs: Any):
+    def __init__(self, username: str, host: Host = Host.GITHUB, token: str | None = None, **kwargs: Any):
         super().__init__(**kwargs)
         self.username = username
         self.host = host
+        self.token = token or ''
 
 
 class ActivityItem(GObject.Object):
