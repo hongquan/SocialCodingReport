@@ -106,17 +106,15 @@ class GitHubClient(GObject.Object):
         self.emit('user-activities-fetched', username, items, '')
         log.info('Processed {} involvement activities for {}', len(items), username)
 
-    def run_graphql_query(self, query: str, variables: dict[str, Any], user_data: Any = None):
+    def run_graphql_query(self, query: str, variables: dict[str, Any], token: str | None = None, user_data: Any = None):
         url = 'https://api.github.com/graphql'
         msg = Soup.Message.new(HTTPMethod.POST, url)
         msg.get_request_headers().append('User-Agent', self.user_agent)
 
-        # Priority: env var (already loaded in self.token)
-        # Note: We don't have token argument here, assuming self.token is sufficient or we should rely on it.
-        # Check fetch_user_events logic: `auth_token = token or self.token`.
-        # Here we only use self.token for simplicity as we don't pass token around much besides initial fetch.
-        if self.token:
-            msg.get_request_headers().append('Authorization', f'Bearer {self.token}')
+        # Priority: explicit token > env var > none
+        auth_token = token or self.token
+        if auth_token:
+            msg.get_request_headers().append('Authorization', f'Bearer {auth_token}')
 
         body = {'query': query, 'variables': variables}
         msg.set_request_body_from_bytes('application/json', GLib.Bytes.new(json.dumps(body).encode('utf-8')))

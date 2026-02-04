@@ -49,6 +49,7 @@ class ReportPage(Adw.Bin):
         self.client.connect('user-activities-fetched', self.on_activities_loaded)
         self.client.connect('graphql-query-done', self.on_titles_fetched)
         self.config = ConfigManager()
+        self.github_token = None
 
         resource_path = '/vn/ququ/SocialCodingReport/queries/list-issues.gql'
         bytes_data = Gio.resources_lookup_data(resource_path, Gio.ResourceLookupFlags.NONE)
@@ -109,6 +110,7 @@ class ReportPage(Adw.Bin):
             self.is_loading = False
             return
 
+        self.github_token = github_account.token
         self.client.fetch_user_events(github_account.username, since_date, until_date, token=github_account.token)
 
     def on_activities_loaded(
@@ -156,7 +158,10 @@ class ReportPage(Adw.Bin):
 
             # Pass repo key and items to callback
             self.client.run_graphql_query(
-                self.graphql_query, {'owner': owner, 'name': name, 'since': since_iso}, (items, owner, name)
+                self.graphql_query,
+                {'owner': owner, 'name': name, 'since': since_iso},
+                token=self.github_token,
+                user_data=(items, owner, name),
             )
 
         log.info('Loaded {} activities for user {}', self.activity_store.get_n_items(), username)

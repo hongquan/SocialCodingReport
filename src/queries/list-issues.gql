@@ -1,6 +1,6 @@
 query($owner: String!, $name: String!, $since: DateTime!) {
   repository(owner: $owner, name: $name) {
-    issues(filterBy: { since: $since }, last: 10) {
+    issues(filterBy: { since: $since }, last: 50) {
       nodes {
         id
         number
@@ -11,7 +11,7 @@ query($owner: String!, $name: String!, $since: DateTime!) {
         ...pageInfoFields
       }
     }
-    pullRequests(last: 10) {
+    pullRequests(last: 50) {
       nodes {
         id
         number

@@ -146,7 +146,7 @@ class ActivityItem(GObject.Object):
     display_text = GObject.Property(type=str)
     type_char = GObject.Property(type=str)
     author = GObject.Property(type=str)
-    database_id = GObject.Property(type=int)
+    database_id = GObject.Property(type=GObject.TYPE_INT64)
     api_url = GObject.Property(type=str)
 
     def __init__(self, **kwargs: Any):
