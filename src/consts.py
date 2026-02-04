@@ -57,3 +57,4 @@ class GHEventType(StrEnum):
 class DateNamedRange(StrEnum):
     TODAY = 'today'
     YESTERDAY = 'yesterday'
+    LAST_7_DAYS = 'last-7-days'

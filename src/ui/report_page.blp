@@ -31,15 +31,30 @@ template $ReportPage: Adw.Bin {
       margin-start: 12;
       margin-end: 12;
 
-      ToggleButton btn_yesterday {
-        label: "Yesterday";
-        active: bind $is_yesterday_active(template.date_named_range) as <bool>;
-        toggled => $load_data();
-      }
+      Gtk.Box {
+        styles [
+          "linked",
+        ]
 
-      ToggleButton btn_today {
-        label: "Today";
-        group: btn_yesterday;
+        ToggleButton btn_last_7_days {
+          label: "Last 7 days";
+          group: btn_yesterday;
+          active: bind $is_last_7_days_active(template.date_named_range) as <bool>;
+          toggled => $on_date_range_toggled();
+        }
+
+        ToggleButton btn_yesterday {
+          label: "Yesterday";
+          active: bind $is_yesterday_active(template.date_named_range) as <bool>;
+          toggled => $on_date_range_toggled();
+        }
+
+        ToggleButton btn_today {
+          label: "Today";
+          group: btn_yesterday;
+          active: bind $is_today_active(template.date_named_range) as <bool>;
+          toggled => $on_date_range_toggled();
+        }
       }
 
       Button {

@@ -38,6 +38,7 @@ class ReportPage(Adw.Bin):
     btn_generate: Gtk.Button = Gtk.Template.Child()
     btn_yesterday: Gtk.ToggleButton = Gtk.Template.Child()
     btn_today: Gtk.ToggleButton = Gtk.Template.Child()
+    btn_last_7_days: Gtk.ToggleButton = Gtk.Template.Child()
     activity_store: Gio.ListStore = Gtk.Template.Child()
     selection_model: Gtk.MultiSelection = Gtk.Template.Child()
     repo_store = Gio.ListStore(item_type=RepoItem)
@@ -59,21 +60,35 @@ class ReportPage(Adw.Bin):
         GLib.idle_add(self.load_data)
 
     @Gtk.Template.Callback()
+    def is_today_active(self, wd: Self, value: str) -> bool:
+        return value == DateNamedRange.TODAY
+
+    @Gtk.Template.Callback()
     def is_yesterday_active(self, wd: Self, value: str) -> bool:
         return value == DateNamedRange.YESTERDAY
 
     @Gtk.Template.Callback()
-    def load_data(self, ytd_btn: Gtk.ToggleButton | None = None):
-        self.is_loading = True
-        # Get filter state
-        if ytd_btn is not None:
-            if ytd_btn.get_active():
-                state = DateNamedRange.YESTERDAY
-            else:
-                state = DateNamedRange.TODAY
-            self.date_named_range = state
+    def is_last_7_days_active(self, wd: Self, value: str) -> bool:
+        return value == DateNamedRange.LAST_7_DAYS
+
+    @Gtk.Template.Callback()
+    def on_date_range_toggled(self, widget: Gtk.ToggleButton):
+        if self.btn_yesterday.get_active():
+            new_state = DateNamedRange.YESTERDAY
+        elif self.btn_today.get_active():
+            new_state = DateNamedRange.TODAY
+        elif self.btn_last_7_days.get_active():
+            new_state = DateNamedRange.LAST_7_DAYS
         else:
-            state = DateNamedRange(self.date_named_range)
+            return  # Should not happen as they are grouped
+
+        if new_state != self.date_named_range:
+            self.date_named_range = new_state
+            self.load_data()
+
+    def load_data(self):
+        self.is_loading = True
+        state = DateNamedRange(self.date_named_range)
 
         # Determine date
         now = datetime.now().astimezone()
@@ -81,6 +96,9 @@ class ReportPage(Adw.Bin):
 
         if state == DateNamedRange.YESTERDAY:
             since_date = today_start - timedelta(days=1)
+            until_date = today_start
+        elif state == DateNamedRange.LAST_7_DAYS:
+            since_date = today_start - timedelta(days=7)
             until_date = today_start
         else:
             since_date = today_start
