@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from datetime import UTC, datetime, timedelta
 from typing import Any, Self
 
 import gi
@@ -8,9 +9,10 @@ from pydantic import ValidationError
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 gi.require_version('GObject', '2.0')
-from datetime import datetime, timedelta
+gi.require_version('WebKit', '6.0')
 
-from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
+
+from gi.repository import Adw, Gio, GLib, GObject, Gtk, WebKit
 from logbook import Logger
 
 from ..config import ConfigManager
@@ -41,6 +43,7 @@ class ReportPage(Adw.Bin):
     btn_last_7_days: Gtk.ToggleButton = Gtk.Template.Child()
     activity_store: Gio.ListStore = Gtk.Template.Child()
     selection_model: Gtk.MultiSelection = Gtk.Template.Child()
+    report_preview: WebKit.WebView = Gtk.Template.Child()
     repo_store = Gio.ListStore(item_type=RepoItem)
 
     def __init__(self, **kwargs: Any):
@@ -51,6 +54,7 @@ class ReportPage(Adw.Bin):
         self.client.connect('graphql-query-done', self.on_titles_fetched)
         self.config = ConfigManager()
         self.github_token = None
+        self.today_activities: list[ActivityItem] = []
 
         resource_path = '/vn/ququ/SocialCodingReport/queries/list-issues.gql'
         bytes_data = Gio.resources_lookup_data(resource_path, Gio.ResourceLookupFlags.NONE)
@@ -151,6 +155,12 @@ class ReportPage(Adw.Bin):
                 item = ActivityItem.from_activity_data(act)
                 self.activity_store.append(item)
 
+        # Store today's activity items for automated plans
+        if self.date_named_range == DateNamedRange.TODAY:
+            self.today_activities = []
+            for item in self.activity_store:
+                self.today_activities.append(item)
+
         # Check for missing titles
         missing_items_by_repo: dict[tuple[str, str], list[ActivityItem]] = {}
         for item in self.activity_store:
@@ -169,8 +179,8 @@ class ReportPage(Adw.Bin):
             # Ideally we want the earliest created_at of the missing items.
             # But converting ActivityItem.created_at (which is object/datetime) to ISO string is needed.
             min_date = min(item.created_at for item in items if isinstance(item.created_at, datetime))
-            # Subtract a bit of buffer (e.g. 1 minute) just in case
-            since_iso = (min_date - timedelta(minutes=1)).isoformat()
+            # GitHub GraphQL API expects UTC for the 'since' parameter
+            since_iso = (min_date.astimezone(UTC) - timedelta(minutes=1)).isoformat()
 
             log.info('Fetching missing titles for {}/{} since {}...', owner, name, since_iso)
 
@@ -228,10 +238,6 @@ class ReportPage(Adw.Bin):
             if self.selection_model.is_selected(i):
                 selected_items.append(item)
 
-        if not selected_items:
-            log.info('No items selected')
-            return
-
         activities = []
         for item in selected_items:
             # Reconstruct ActivityData and RepoInfo
@@ -251,10 +257,24 @@ class ReportPage(Adw.Bin):
             )
             activities.append(activity)
 
-        html_content = generate_report(activities)
+        today_plans = []
+        for item in self.today_activities:
+            repo_info = RepoInfo(name=item.repo_name, owner=item.repo_owner, host=Host.GITHUB)
+            activity = ReportActivity(
+                title=item.title,
+                api_url=item.api_url,
+                html_url=item.url,
+                task_type=TaskType(item.task_type),
+                action=ActivityAction(item.action),
+                author=item.author,
+                created_at=item.created_at,
+                repo_info=repo_info,
+                database_id=item.database_id,
+            )
+            today_plans.append(activity)
 
-        clipboard = self.get_display().get_clipboard()
-        content_provider = Gdk.ContentProvider.new_for_bytes('text/html', GLib.Bytes.new(html_content.encode('utf-8')))
-        clipboard.set_content(content_provider)
+        html_content = generate_report(activities, today_plans)
 
-        log.info('Report copied to clipboard.')
+        self.report_preview.load_html(html_content, None)
+
+        log.info('Report generated and displayed in preview.')

@@ -1,6 +1,7 @@
 using Gtk 4.0;
 using Adw 1;
 using Gio 2.0;
+using WebKit 6.0;
 
 Gio.ListStore activity_store {
   item-type: typeof<$ActivityItem>;
@@ -65,75 +66,95 @@ template $ReportPage: Adw.Bin {
     }
 
     content: Gtk.Overlay {
-      child: Gtk.ScrolledWindow {
-        vexpand: true;
-        margin-start: 6;
-        margin-end: 6;
+      child: Gtk.Paned {
+        orientation: vertical;
+        shrink-end-child: false;
+        shrink-start-child: false;
+        position: 400;
 
-        child: Gtk.ColumnView activity_table {
-          model: selection_model;
+        start-child: Gtk.ScrolledWindow {
+          vexpand: true;
+          margin-start: 6;
+          margin-end: 6;
 
-          Gtk.ColumnViewColumn {
-            factory: BuilderListItemFactory {
-              template ListItem {
-                child: CheckButton {
-                  active: bind template.selected;
-                };
-              }
-            };
-          }
+          child: Gtk.ColumnView activity_table {
+            model: selection_model;
 
-          Gtk.ColumnViewColumn {
-            title: "Repo";
+            Gtk.ColumnViewColumn {
+              factory: BuilderListItemFactory {
+                template ListItem {
+                  child: CheckButton {
+                    active: bind template.selected;
+                  };
+                }
+              };
+            }
 
-            factory: BuilderListItemFactory {
-              template ListItem {
-                child: Label {
-                  label: bind template.item as <$ActivityItem>.repo_name;
-                };
-              }
-            };
-          }
+            Gtk.ColumnViewColumn {
+              title: "Repo";
 
-          Gtk.ColumnViewColumn {
-            title: "Type";
+              factory: BuilderListItemFactory {
+                template ListItem {
+                  child: Label {
+                    label: bind template.item as <$ActivityItem>.repo_name;
+                  };
+                }
+              };
+            }
 
-            factory: BuilderListItemFactory {
-              template ListItem {
-                child: Label {
-                  label: bind template.item as <$ActivityItem>.type_char;
-                };
-              }
-            };
-          }
+            Gtk.ColumnViewColumn {
+              title: "Type";
 
-          Gtk.ColumnViewColumn {
-            title: "Author";
+              factory: BuilderListItemFactory {
+                template ListItem {
+                  child: Label {
+                    label: bind template.item as <$ActivityItem>.type_char;
+                  };
+                }
+              };
+            }
 
-            factory: BuilderListItemFactory {
-              template ListItem {
-                child: Label {
-                  label: bind template.item as <$ActivityItem>.author;
-                };
-              }
-            };
-          }
+            Gtk.ColumnViewColumn {
+              title: "Author";
 
-          Gtk.ColumnViewColumn {
-            title: "Title";
-            expand: true;
+              factory: BuilderListItemFactory {
+                template ListItem {
+                  child: Label {
+                    label: bind template.item as <$ActivityItem>.author;
+                  };
+                }
+              };
+            }
 
-            factory: BuilderListItemFactory {
-              template ListItem {
-                child: Label {
-                  label: bind template.item as <$ActivityItem>.display_title;
-                  use-markup: false;
-                  xalign: 0;
-                  ellipsize: end;
-                };
-              }
-            };
-          }
+            Gtk.ColumnViewColumn {
+              title: "Title";
+              expand: true;
+
+              factory: BuilderListItemFactory {
+                template ListItem {
+                  child: Label {
+                    label: bind template.item as <$ActivityItem>.display_title;
+                    use-markup: false;
+                    xalign: 0;
+                    ellipsize: end;
+                  };
+                }
+              };
+            }
+          };
+        };
+
+        end-child: Gtk.ScrolledWindow {
+          vexpand: true;
+          margin-start: 6;
+          margin-end: 6;
+          margin-top: 6;
+          margin-bottom: 6;
+
+          child: WebKit.WebView report_preview {
+            hexpand: true;
+            vexpand: true;
+          };
         };
       };
 

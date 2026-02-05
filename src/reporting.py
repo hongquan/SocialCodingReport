@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from jinja2 import Environment, FileSystemLoader
 
-from .consts import ActivityAction, TaskType
+from .consts import DATA_DIR, ActivityAction, TaskType
 from .models import ReportActivity
 
 
@@ -41,9 +41,14 @@ def group_activities_by_repo(activities: Sequence[ReportActivity]) -> dict[str, 
             if activity.action == ActivityAction.CREATED_ISSUE:
                 grouped[activity.repo_long_name].created_issues.append(activity)
 
+    return grouped
 
-def generate_report(activities: Sequence[ReportActivity]) -> str:
-    env = Environment(loader=FileSystemLoader('data'))
+
+def generate_report(
+    yesterday_activities: Sequence[ReportActivity], today_activities: Sequence[ReportActivity] = ()
+) -> str:
+    env = Environment(loader=FileSystemLoader(str(DATA_DIR)))
     template = env.get_template('report.html.jinja')
-    grouped = group_activities_by_repo(activities)
-    return template.render(grouped=grouped)
+    yesterday = group_activities_by_repo(yesterday_activities)
+    today = group_activities_by_repo(today_activities)
+    return template.render(yesterday=yesterday, today=today)

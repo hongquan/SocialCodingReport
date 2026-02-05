@@ -24,7 +24,21 @@ resources = gnome.compile_resources(
   install_dir: pkgdatadir,
 )
 
-# Python Sources
+# Launcher
+python = import( 'python')
+conf = configuration_data()
+conf.set('PYTHON', python.find_installation('python3').full_path())
+conf.set('pkgdatadir', pkgdatadir)
+
+# Paths
+configure_file(
+  input: 'paths.py.in',
+  output: 'paths.py',
+  configuration: conf,
+  install: true,
+  install_dir: moduledir
+)
+
 python_sources = [
   '__init__.py',
   'main.py',
@@ -41,12 +55,6 @@ python_sources = [
 install_data(python_sources, install_dir: moduledir)
 
 subdir('pages')
-
-# Launcher
-python = import('python')
-conf = configuration_data()
-conf.set('PYTHON', python.find_installation('python3').full_path())
-conf.set('pkgdatadir', pkgdatadir)
 
 configure_file(
   input: 'socialcodingreport.in',

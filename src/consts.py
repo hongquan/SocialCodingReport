@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from enum import StrEnum
+from pathlib import Path
+
+from .paths import PKGDATADIR
 
 
 SHORT_NAME = 'socialcodingreport'
@@ -58,3 +61,8 @@ class DateNamedRange(StrEnum):
     TODAY = 'today'
     YESTERDAY = 'yesterday'
     LAST_7_DAYS = 'last-7-days'
+
+
+# Data directory
+# Supports both source run and installed layout.
+DATA_DIR = Path(PKGDATADIR) / 'data'

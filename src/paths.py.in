@@ -1,0 +1,12 @@
+import os
+from pathlib import Path
+
+# This file is configured by Meson
+# It provides the installed paths for the application
+
+PKGDATADIR = '@pkgdatadir@'
+
+# Fallback for development (if @pkgdatadir@ is not substituted or doesn't exist)
+if PKGDATADIR.startswith('@') or not PKGDATADIR or not os.path.exists(PKGDATADIR):
+    # Assume source layout: PKGDATADIR is the project root (where 'data' is)
+    PKGDATADIR = str(Path(__file__).parent.parent)

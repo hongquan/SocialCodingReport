@@ -1,33 +1,48 @@
-<h2>What did you do?</h2>
+<h2>1. What did I do yesterday?</h2>
 <div>
-    {% for repo, group in grouped.items() %}
-    <h3>{{ group.repo_shortname }}</h3>
-    
-    {% if group.created_prs %}
-    <h4>Created Pull Requests</h4>
-    <ul>
-        {% for activity in group.created_prs %}
-        <li><a href="{{ activity.url }}">{{ activity.title }}</a></li>
+  {% for repo, group in yesterday.items() %}
+    {% if group.created_prs or group.reviewed_prs or group.created_issues %}
+      <p><b>{{ group.repo_shortname }}</b></p>
+      <ul>
+        {% for pr in group.created_prs %}
+          <li>Created PR: <a href='{{ pr.html_url }}'>{{ pr.title }}</a></li>
         {% endfor %}
-    </ul>
-    {% endif %}
-
-    {% if group.reviewed_prs %}
-    <h4>Reviewed Pull Requests</h4>
-    <ul>
-        {% for activity in group.reviewed_prs %}
-        <li><a href="{{ activity.url }}">{{ activity.title }}</a></li>
+        {% for pr in group.reviewed_prs %}
+          <li>Reviewed PR: <a href='{{ pr.html_url }}'>{{ pr.title }}</a></li>
         {% endfor %}
-    </ul>
-    {% endif %}
-
-    {% if group.created_issues %}
-    <h4>Created Issues</h4>
-    <ul>
-        {% for activity in group.created_issues %}
-        <li><a href="{{ activity.url }}">{{ activity.title }}</a></li>
+        {% for issue in group.created_issues %}
+          <li>Created Issue: <a href='{{ issue.html_url }}'>{{ issue.title }}</a></li>
         {% endfor %}
-    </ul>
+      </ul>
     {% endif %}
-    {% endfor %}
+  {% endfor %}
 </div>
+
+<h2>2. What do I plan to do today?</h2>
+<div id='plans'>
+  {% if today %}
+    {% for repo, group in today.items() %}
+      {% if group.created_prs or group.reviewed_prs or group.created_issues %}
+        <p><b>{{ group.repo_shortname }}</b></p>
+        <ul>
+          {% for pr in group.created_prs %}
+            <li><a href='{{ pr.html_url }}'>{{ pr.title }}</a></li>
+          {% endfor %}
+          {% for pr in group.reviewed_prs %}
+            <li><a href='{{ pr.html_url }}'>{{ pr.title }}</a></li>
+          {% endfor %}
+          {% for issue in group.created_issues %}
+            <li><a href='{{ issue.html_url }}'>{{ issue.title }}</a></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    <ul>
+      <li></li>
+    </ul>
+  {% endif %}
+</div>
+
+<h2>3. What is blocking me from making progress?</h2>
+<p>No blocker at the moment</p>
