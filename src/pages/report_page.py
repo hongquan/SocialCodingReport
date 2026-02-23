@@ -10,9 +10,10 @@ gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 gi.require_version('GObject', '2.0')
 gi.require_version('WebKit', '6.0')
+gi.require_version('Gdk', '4.0')
 
 
-from gi.repository import Adw, Gio, GLib, GObject, Gtk, WebKit
+from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk, WebKit
 from logbook import Logger
 
 from ..config import ConfigManager
@@ -41,6 +42,7 @@ class ReportPage(Adw.Bin):
     btn_yesterday: Gtk.ToggleButton = Gtk.Template.Child()
     btn_today: Gtk.ToggleButton = Gtk.Template.Child()
     btn_last_7_days: Gtk.ToggleButton = Gtk.Template.Child()
+    btn_copy: Gtk.Button = Gtk.Template.Child()
     activity_store: Gio.ListStore = Gtk.Template.Child()
     selection_model: Gtk.MultiSelection = Gtk.Template.Child()
     report_preview: WebKit.WebView = Gtk.Template.Child()
@@ -55,7 +57,7 @@ class ReportPage(Adw.Bin):
         self.config = ConfigManager()
         self.github_token = None
         self.today_activities: list[ActivityItem] = []
-
+        self.current_report_html = ''
         resource_path = '/vn/ququ/SocialCodingReport/queries/list-issues.gql'
         bytes_data = Gio.resources_lookup_data(resource_path, Gio.ResourceLookupFlags.NONE)
         self.graphql_query = bytes_data.get_data().decode('utf-8')
@@ -254,6 +256,7 @@ class ReportPage(Adw.Bin):
                 created_at=item.created_at,
                 repo_info=repo_info,
                 database_id=item.database_id,
+                number=item.number,
             )
             activities.append(activity)
 
@@ -270,11 +273,40 @@ class ReportPage(Adw.Bin):
                 created_at=item.created_at,
                 repo_info=repo_info,
                 database_id=item.database_id,
+                number=item.number,
             )
             today_plans.append(activity)
 
         html_content = generate_report(activities, today_plans)
+        self.current_report_html = html_content
 
         self.report_preview.load_html(html_content, None)
+        self.btn_copy.set_sensitive(True)
 
         log.info('Report generated and displayed in preview.')
+
+    @Gtk.Template.Callback()
+    def on_copy(self, btn: Gtk.Button):
+        if not self.current_report_html:
+            return
+
+        display = self.get_display()
+        clipboard = display.get_clipboard()
+
+        # Create a content provider for both HTML and plain text for better compatibility
+        # We need to strip HTML for plain text fallback
+        import re
+
+        plain_text = re.sub('<[^<]+?>', '', self.current_report_html)
+
+        content = Gdk.ContentProvider.new_union(
+            [
+                Gdk.ContentProvider.new_for_bytes(
+                    'text/html', GLib.Bytes.new(self.current_report_html.encode('utf-8'))
+                ),
+                Gdk.ContentProvider.new_for_bytes('text/plain', GLib.Bytes.new(plain_text.encode('utf-8'))),
+            ]
+        )
+
+        clipboard.set_content(content)
+        log.info('Report copied to clipboard as HTML and plain text.')

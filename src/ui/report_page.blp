@@ -176,6 +176,8 @@ template $ReportPage: Adw.Bin {
 
     [bottom]
     Gtk.Box {
+      orientation: horizontal;
+      spacing: 12;
       margin-top: 12;
       margin-bottom: 12;
       margin-start: 12;
@@ -189,6 +191,12 @@ template $ReportPage: Adw.Bin {
         styles [
           "suggested-action",
         ]
+      }
+
+      Button btn_copy {
+        label: "Copy to Clipboard";
+        clicked => $on_copy();
+        sensitive: false;
       }
     }
   };

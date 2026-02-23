@@ -41,6 +41,7 @@ class InvolvementActivity:
     created_at: datetime
     repo_info: RepoInfo
     database_id: int | None = None
+    number: int | None = None
 
     @property
     def repo_long_name(self) -> str:
@@ -59,6 +60,7 @@ class InvolvementActivity:
                 api_url = p.pull_request.url
                 html_url = p.pull_request.html_url
                 database_id = p.pull_request.id
+                number = p.pull_request.number
             case GHPullRequestReviewEvent(payload=p):
                 task_type = TaskType.PR
                 action = ActivityAction.REVIEWED_PR
@@ -67,6 +69,7 @@ class InvolvementActivity:
                 api_url = p.pull_request.url
                 html_url = p.pull_request.html_url
                 database_id = p.pull_request.id
+                number = p.pull_request.number
             case GHIssuesEvent(payload=p):
                 task_type = TaskType.ISSUE
                 action = ActivityAction.CREATED_ISSUE if p.action == 'opened' else ActivityAction.UPDATED_ISSUE
@@ -74,6 +77,7 @@ class InvolvementActivity:
                 api_url = p.issue.url
                 html_url = p.issue.html_url
                 database_id = p.issue.id
+                number = p.issue.number
             case GHIssueCommentEvent(payload=p):
                 if p.issue.pull_request:
                     task_type = TaskType.PR
@@ -85,6 +89,7 @@ class InvolvementActivity:
                 api_url = p.issue.url
                 html_url = p.issue.html_url
                 database_id = p.issue.id
+                number = p.issue.number
             case _:
                 raise ValueError('Unsupported event type for InvolvementActivity')
         return cls(
@@ -101,6 +106,7 @@ class InvolvementActivity:
                 host=Host.GITHUB,
             ),
             database_id=database_id,
+            number=number,
         )
 
 
@@ -162,6 +168,7 @@ class ActivityItem(GObject.Object):
     type_char = GObject.Property(type=str)
     author = GObject.Property(type=str)
     database_id = GObject.Property(type=GObject.TYPE_INT64)
+    number = GObject.Property(type=int)
     api_url = GObject.Property(type=str)
 
     def __init__(self, **kwargs: Any):
@@ -191,4 +198,5 @@ class ActivityItem(GObject.Object):
             repo_owner=data.repo_info.owner,
             author=data.author,
             database_id=data.database_id,
+            number=data.number or 0,
         )
