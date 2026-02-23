@@ -15,7 +15,14 @@ from logbook import Logger
 from pydantic import TypeAdapter
 
 from .models import InvolvementActivity
-from .schemas import GHIssueCommentEvent, GHIssuesEvent, GHPullRequestEvent, GHPullRequestReviewEvent, GHUserEvent
+from .schemas import (
+    GHIssueCommentEvent,
+    GHIssuesEvent,
+    GHPullRequestEvent,
+    GHPullRequestReviewEvent,
+    GHSearchResponse,
+    GHUserEvent,
+)
 
 
 log = Logger(__name__)
@@ -25,6 +32,7 @@ class GitHubClient(GObject.Object):
     __gsignals__ = {
         'user-activities-fetched': (GObject.SignalFlags.RUN_FIRST, None, (str, object, str)),
         'graphql-query-done': (GObject.SignalFlags.RUN_FIRST, None, (str, object)),
+        'authored-prs-fetched': (GObject.SignalFlags.RUN_FIRST, None, (str, object, str)),
     }
 
     def __init__(self):
@@ -149,3 +157,67 @@ class GitHubClient(GObject.Object):
             self.emit('graphql-query-done', '', user_data)
         else:
             self.emit('graphql-query-done', raw_data.decode('utf-8'), user_data)
+
+    def fetch_authored_prs(self, username: str, repos: list[str] | None = None, token: str | None = None):
+        """
+        Fetch open/draft pull requests authored by the user via REST Search API.
+        Optionally filters by a list of repositories.
+        Emits 'authored-prs-fetched' (username, pr_list, error_message)
+        """
+        query = f'author:{username} type:pr state:open'
+        if repos:
+            repo_filters = []
+            current_query = query
+            for repo in repos:
+                repo_filter = f' repo:{repo}'
+                # GitHub has a 256 char limit for search queries.
+                # We stay conservative at 200 to be safe with URL encoding.
+                if len(current_query) + len(repo_filter) < 200:
+                    current_query += repo_filter
+                    repo_filters.append(repo_filter)
+                else:
+                    log.debug('Query length limit reached, some repos will be filtered client-side')
+                    break
+            query = current_query
+
+        url = f'https://api.github.com/search/issues?q={quote(query)}'
+
+        msg = Soup.Message.new(HTTPMethod.GET, url)
+        msg.get_request_headers().append('User-Agent', self.user_agent)
+
+        auth_token = token or self.token
+        if auth_token:
+            msg.get_request_headers().append('Authorization', f'Bearer {auth_token}')
+
+        log.info('Fetching authored PRs for user: {}', username)
+        self.session.send_and_read_async(
+            msg,
+            GLib.PRIORITY_DEFAULT,
+            None,
+            self.on_authored_prs_fetching_done,
+            username,
+        )
+
+    def on_authored_prs_fetching_done(self, session: Soup.Session, result: Gio.AsyncResult, username: str):
+        try:
+            bytes_data = session.send_and_read_finish(result)
+        except GLib.Error as e:
+            log.error('Network error during authored PRs fetch: {}', e)
+            self.emit('authored-prs-fetched', username, [], str(e))
+            return
+
+        msg = session.get_async_result_message(result)
+        status_code = msg.get_status()
+        if status_code != Soup.Status.OK:
+            log.error('GitHub API (Search) returned status code: {}', status_code)
+            self.emit('authored-prs-fetched', username, [], f'GitHub API Error: Status {status_code}')
+            return
+
+        raw_data = bytes_data.get_data()
+        try:
+            response = GHSearchResponse.model_validate_json(raw_data)
+            self.emit('authored-prs-fetched', username, response.items, '')
+            log.info('Fetched {} authored PRs for {}', len(response.items), username)
+        except Exception as e:
+            log.error('Error parsing search response: {}', e)
+            self.emit('authored-prs-fetched', username, [], str(e))

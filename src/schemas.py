@@ -188,5 +188,35 @@ class GHGraphQLRepositoryWrapper:
     repository: GHGraphQLRepository
 
 
+@dataclass
+@with_config(ConfigDict(extra='ignore'))
+class GHSearchIssue:
+    title: str
+    html_url: str
+    number: int
+    id: int
+    state: str
+    repository_url: str  # e.g. "https://api.github.com/repos/owner/repo"
+    draft: bool = False
+
+    @property
+    def repo_name(self) -> str:
+        return self.repository_url.split('/')[-1]
+
+    @property
+    def repo_owner(self) -> str:
+        return self.repository_url.split('/')[-2]
+
+    @property
+    def repo_long_name(self) -> str:
+        return f'{self.repo_owner}/{self.repo_name}'
+
+
+class GHSearchResponse(BaseModel):
+    total_count: int
+    incomplete_results: bool
+    items: list[GHSearchIssue]
+
+
 class GHGraphQLResponse(BaseModel):
     data: GHGraphQLRepositoryWrapper

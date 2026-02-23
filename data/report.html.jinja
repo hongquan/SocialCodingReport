@@ -9,7 +9,7 @@
   <div>
     {% for repo, group in yesterday.items() %}
       {% if group.created_prs or group.reviewed_prs or group.created_issues %}
-        <p style='margin: 3px 0;'><b><i>{{ group.repo_shortname }}</i></b></p>
+        <p style='margin: 3px 0;'><i>{{ group.repo_shortname }}</i></p>
         <ul style='margin-top: 3px;'>
           {% for pr in group.created_prs %}
             <li>Created PR: <a href='{{ pr.html_url }}'>PR {{ pr.number }}</a> ({{ pr.title }})</li>

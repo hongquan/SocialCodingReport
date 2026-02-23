@@ -1,3 +1,4 @@
+import re
 from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from typing import Any, Self
@@ -21,7 +22,7 @@ from ..consts import ActivityAction, DateNamedRange, Host, TaskType
 from ..github_client import GitHubClient
 from ..models import ActivityItem, InvolvementActivity, RepoInfo, RepoItem, ReportActivity
 from ..reporting import generate_report
-from ..schemas import GHGraphQLConnection, GHGraphQLResponse
+from ..schemas import GHGraphQLConnection, GHGraphQLResponse, GHSearchIssue
 
 
 log = Logger(__name__)
@@ -54,9 +55,11 @@ class ReportPage(Adw.Bin):
         self.client = GitHubClient()
         self.client.connect('user-activities-fetched', self.on_activities_loaded)
         self.client.connect('graphql-query-done', self.on_titles_fetched)
+        self.client.connect('authored-prs-fetched', self.on_authored_prs_loaded)
         self.config = ConfigManager()
         self.github_token = None
         self.today_activities: list[ActivityItem] = []
+        self.ongoing_activities: list[ActivityItem] = []
         self.current_report_html = ''
         resource_path = '/vn/ququ/SocialCodingReport/queries/list-issues.gql'
         bytes_data = Gio.resources_lookup_data(resource_path, Gio.ResourceLookupFlags.NONE)
@@ -137,6 +140,9 @@ class ReportPage(Adw.Bin):
         self.github_token = github_account.token
         self.client.fetch_user_events(github_account.username, since_date, until_date, token=github_account.token)
 
+        repo_list = [f'{rp.owner}/{rp.name}' for rp in self.repo_store]
+        self.client.fetch_authored_prs(github_account.username, repos=repo_list, token=github_account.token)
+
     def on_activities_loaded(
         self, client: GitHubClient, username: str, activities: Sequence[InvolvementActivity], error: str
     ):
@@ -153,15 +159,14 @@ class ReportPage(Adw.Bin):
 
         for act in activities:
             if act.repo_long_name in configured_repos:
-                # We can now create ActivityItem directly
                 item = ActivityItem.from_activity_data(act)
-                self.activity_store.append(item)
+                # Ensure no duplicates in activity_store
+                if not any(existing.database_id == item.database_id for existing in self.activity_store):
+                    self.activity_store.append(item)
 
-        # Store today's activity items for automated plans
+        # Update today_activities if we are on the Today tab
         if self.date_named_range == DateNamedRange.TODAY:
-            self.today_activities = []
-            for item in self.activity_store:
-                self.today_activities.append(item)
+            self.today_activities = [item for item in self.activity_store]
 
         # Check for missing titles
         missing_items_by_repo: dict[tuple[str, str], list[ActivityItem]] = {}
@@ -229,6 +234,42 @@ class ReportPage(Adw.Bin):
 
         log.info('Updated titles for {}/{} items: {}/{} found', owner, name, update_count, len(items))
 
+    def on_authored_prs_loaded(self, client: GitHubClient, username: str, prs: list[GHSearchIssue], error: str):
+        if error:
+            log.error('Error loading authored PRs: {}', error)
+            return
+
+        configured_repos = frozenset(f'{rp.owner}/{rp.name}' for rp in self.repo_store)
+        self.ongoing_activities = []
+
+        for pr in prs:
+            if pr.repo_long_name in configured_repos:
+                # Map GHSearchIssue to ActivityItem
+                activity = InvolvementActivity(
+                    title=pr.title,
+                    api_url=pr.html_url,  # Search API doesn't give PR API URL directly in same field
+                    html_url=pr.html_url,
+                    task_type=TaskType.PR,
+                    action=ActivityAction.CREATED_PR,  # We treat as created since it's authored
+                    author=username,
+                    created_at=datetime.now(),  # Not critical for plans
+                    repo_info=RepoInfo(name=pr.repo_name, owner=pr.repo_owner),
+                    database_id=pr.id,
+                    number=pr.number,
+                )
+                item = ActivityItem.from_activity_data(activity)
+                self.ongoing_activities.append(item)
+
+                # If we are on Today tab, add to UI store too
+                if self.date_named_range == DateNamedRange.TODAY:
+                    if not any(existing.database_id == item.database_id for existing in self.activity_store):
+                        self.activity_store.append(item)
+
+        if self.date_named_range == DateNamedRange.TODAY:
+            self.today_activities = [item for item in self.activity_store]
+
+        log.info('Loaded {} ongoing PRs for user {}', len(self.ongoing_activities), username)
+
     @Gtk.Template.Callback()
     def on_refresh(self, btn: Gtk.Button):
         self.load_data()
@@ -261,7 +302,16 @@ class ReportPage(Adw.Bin):
             activities.append(activity)
 
         today_plans = []
-        for item in self.today_activities:
+        # Merge today_activities and ongoing_activities, avoiding duplicates by database_id
+        seen_ids = set()
+
+        all_today_items = self.today_activities + self.ongoing_activities
+
+        for item in all_today_items:
+            if item.database_id in seen_ids:
+                continue
+            seen_ids.add(item.database_id)
+
             repo_info = RepoInfo(name=item.repo_name, owner=item.repo_owner, host=Host.GITHUB)
             activity = ReportActivity(
                 title=item.title,
@@ -295,8 +345,6 @@ class ReportPage(Adw.Bin):
 
         # Create a content provider for both HTML and plain text for better compatibility
         # We need to strip HTML for plain text fallback
-        import re
-
         plain_text = re.sub('<[^<]+?>', '', self.current_report_html)
 
         content = Gdk.ContentProvider.new_union(
