@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, with_config
@@ -90,11 +90,12 @@ class GHInPayloadIssue:
     title: str
     state: GHState
     html_url: str
+    pull_request: dict[str, Any] | None = None
 
 
 @dataclass
 @with_config(ConfigDict(extra='ignore'))
-class GHIssuePayload:
+class GHIssueCommentPayload:
     action: str
     issue: GHInPayloadIssue
 
@@ -117,9 +118,21 @@ class GHPullRequestReviewEvent(GHUserEventCommon):
     payload: GHPullRequestReviewPayload
 
 
+@dataclass
+@with_config(ConfigDict(extra='ignore'))
+class GHIssuePayload:
+    action: str
+    issue: GHInPayloadIssue
+
+
 class GHIssuesEvent(GHUserEventCommon):
     type: Literal[GHEventType.ISSUES]
     payload: GHIssuePayload
+
+
+class GHIssueCommentEvent(GHUserEventCommon):
+    type: Literal[GHEventType.ISSUE_COMMENT]
+    payload: GHIssueCommentPayload
 
 
 class GHUncaredEvent(GHUserEventCommon):
@@ -129,7 +142,6 @@ class GHUncaredEvent(GHUserEventCommon):
         GHEventType.DISCUSSION,
         GHEventType.FORK,
         GHEventType.GOLLUM,
-        GHEventType.ISSUE_COMMENT,
         GHEventType.MEMBER,
         GHEventType.PUBLIC,
         GHEventType.PULL_REQUEST_REVIEW_COMMENT,
@@ -139,7 +151,7 @@ class GHUncaredEvent(GHUserEventCommon):
 
 
 GHUserEvent = Annotated[
-    GHPushEvent | GHPullRequestEvent | GHPullRequestReviewEvent | GHIssuesEvent | GHUncaredEvent,
+    GHPushEvent | GHPullRequestEvent | GHPullRequestReviewEvent | GHIssuesEvent | GHIssueCommentEvent | GHUncaredEvent,
     Field(discriminator='type'),
 ]
 

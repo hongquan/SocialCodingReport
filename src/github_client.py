@@ -15,7 +15,7 @@ from logbook import Logger
 from pydantic import TypeAdapter
 
 from .models import InvolvementActivity
-from .schemas import GHIssuesEvent, GHPullRequestEvent, GHPullRequestReviewEvent, GHUserEvent
+from .schemas import GHIssueCommentEvent, GHIssuesEvent, GHPullRequestEvent, GHPullRequestReviewEvent, GHUserEvent
 
 
 log = Logger(__name__)
@@ -97,7 +97,7 @@ class GitHubClient(GObject.Object):
                 log.debug('Skipping event {} after until_date: {} > {}', gh_event.type, gh_event.created_at, until_date)
                 continue
             match gh_event:
-                case GHPullRequestEvent() | GHPullRequestReviewEvent() | GHIssuesEvent():
+                case GHPullRequestEvent() | GHPullRequestReviewEvent() | GHIssuesEvent() | GHIssueCommentEvent():
                     item = InvolvementActivity.from_github_event(gh_event)
                     items.append(item)
                 case _:

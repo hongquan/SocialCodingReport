@@ -8,7 +8,7 @@ from typing import Any, Self
 from gi.repository import GObject
 
 from .consts import ActivityAction, Host, TaskType
-from .schemas import GHIssuesEvent, GHPullRequestEvent, GHPullRequestReviewEvent
+from .schemas import GHIssueCommentEvent, GHIssuesEvent, GHPullRequestEvent, GHPullRequestReviewEvent
 
 
 class ActivityType(StrEnum):
@@ -47,7 +47,9 @@ class InvolvementActivity:
         return f'{self.repo_info.owner}/{self.repo_info.name}' if self.repo_info.owner else self.repo_info.name
 
     @classmethod
-    def from_github_event(cls, event: GHIssuesEvent | GHPullRequestEvent | GHPullRequestReviewEvent) -> Self:
+    def from_github_event(
+        cls, event: GHIssuesEvent | GHPullRequestEvent | GHPullRequestReviewEvent | GHIssueCommentEvent
+    ) -> Self:
         match event:
             case GHPullRequestEvent(payload=p):
                 task_type = TaskType.PR
@@ -68,6 +70,17 @@ class InvolvementActivity:
             case GHIssuesEvent(payload=p):
                 task_type = TaskType.ISSUE
                 action = ActivityAction.CREATED_ISSUE if p.action == 'opened' else ActivityAction.UPDATED_ISSUE
+                title = p.issue.title
+                api_url = p.issue.url
+                html_url = p.issue.html_url
+                database_id = p.issue.id
+            case GHIssueCommentEvent(payload=p):
+                if p.issue.pull_request:
+                    task_type = TaskType.PR
+                    action = ActivityAction.REVIEWED_PR
+                else:
+                    task_type = TaskType.ISSUE
+                    action = ActivityAction.UPDATED_ISSUE
                 title = p.issue.title
                 api_url = p.issue.url
                 html_url = p.issue.html_url
