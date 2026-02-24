@@ -1,5 +1,7 @@
 # Social Coding Report
 
+![Social Coding Report Logo](https://quan-images.b-cdn.net/app-icons/vn.ququ.SocialCodingReport.svg)
+
 A modern GTK4 + LibAdwaita application that helps you generate daily reports of your GitHub activity (Issues and Pull Requests). It fetches data from configured repositories and lets you select items to copy as a formatted HTML list.
 
 ## Features
@@ -110,3 +112,4 @@ Configuration is stored in `~/.config/socialcodingreport/config.toml`.
 ## License
 
 This project is licensed under the terms of the GNU General Public License v3.0 (GPL-3.0). See the [LICENSE](LICENSE) file for details.
+Icon from vecteezy.com.

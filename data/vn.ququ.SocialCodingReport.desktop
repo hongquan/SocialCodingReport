@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Social Coding Report
+Comment=Track your social coding activities
+Exec=socialcodingreport
+Icon=vn.ququ.SocialCodingReport
+Terminal=false
+Type=Application
+Categories=Development;GTK;
+StartupNotify=true
