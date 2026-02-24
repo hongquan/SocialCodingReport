@@ -69,6 +69,12 @@ class ReportPage(Adw.Bin):
         # Initial load
         GLib.idle_add(self.load_data)
 
+    def add_toast(self, message: str, timeout: int = 5) -> None:
+        """Add a toast with optional timeout in seconds."""
+        toast = Adw.Toast.new(message)
+        toast.set_timeout(timeout)
+        self.toast_overlay.add_toast(toast)
+
     @Gtk.Template.Callback()
     def is_today_active(self, wd: Self, value: str) -> bool:
         return value == DateNamedRange.TODAY
@@ -140,7 +146,7 @@ class ReportPage(Adw.Bin):
 
         self.github_token = github_account.token
 
-        self.toast_overlay.add_toast(Adw.Toast.new('Fetching data from GitHub...'))
+        self.add_toast('Fetching data from GitHub...')
 
         self.client.fetch_user_events(github_account.username, since_date, until_date, token=github_account.token)
 
@@ -161,12 +167,12 @@ class ReportPage(Adw.Bin):
         if error:
             log.error('Error loading data: {}', error)
             if is_rate_limit:
-                self.toast_overlay.add_toast(Adw.Toast.new('Rate limited! Add a GitHub API token in Preferences.'))
+                self.add_toast('Rate limited! Add a GitHub API token in Preferences.')
             else:
-                self.toast_overlay.add_toast(Adw.Toast.new(f'Error: {error}'))
+                self.add_toast(f'Error: {error}')
             return
 
-        self.toast_overlay.add_toast(Adw.Toast.new('Data loaded successfully.'))
+        self.add_toast('Data loaded successfully.')
 
         # Filter items based on configured repos
         configured_repos = frozenset(f'{rp.owner}/{rp.name}' for rp in self.repo_store)
@@ -228,7 +234,7 @@ class ReportPage(Adw.Bin):
         if not response_json:
             log.warning('GraphQL response empty for {}/{} (is_rate_limit={})', owner, name, is_rate_limit)
             if is_rate_limit:
-                self.toast_overlay.add_toast(Adw.Toast.new('Rate limited! Add a GitHub API token in Preferences.'))
+                self.add_toast('Rate limited! Add a GitHub API token in Preferences.')
             return
 
         try:
@@ -264,7 +270,7 @@ class ReportPage(Adw.Bin):
         if error:
             log.error('Error loading authored PRs: {}', error)
             if is_rate_limit:
-                self.toast_overlay.add_toast(Adw.Toast.new('Rate limited! Add a GitHub API token in Preferences.'))
+                self.add_toast('Rate limited! Add a GitHub API token in Preferences.')
             return
 
         configured_repos = frozenset(f'{rp.owner}/{rp.name}' for rp in self.repo_store)
@@ -361,6 +367,7 @@ class ReportPage(Adw.Bin):
         self.report_preview.load_html(html_content, None)
         self.btn_copy.set_sensitive(True)
 
+        self.add_toast('Report generated successfully.')
         log.info('Report generated and displayed in preview.')
 
     @Gtk.Template.Callback()
@@ -385,4 +392,5 @@ class ReportPage(Adw.Bin):
         )
 
         clipboard.set_content(content)
+        self.add_toast('Report copied to clipboard.')
         log.info('Report copied to clipboard as HTML and plain text.')
