@@ -115,6 +115,14 @@ class ReportActivity(InvolvementActivity):
     pass
 
 
+@dataclass
+class GraphQLQueryContext:
+    items: list[ActivityItem]
+    repo_owner: str
+    repo_name: str
+    is_rate_limit: bool = False
+
+
 class RepoItem(GObject.Object):
     __gtype_name__ = 'RepoItem'
 

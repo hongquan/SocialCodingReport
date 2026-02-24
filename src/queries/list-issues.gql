@@ -11,7 +11,7 @@ query($owner: String!, $name: String!, $since: DateTime!) {
         ...pageInfoFields
       }
     }
-    pullRequests(last: 50) {
+    pullRequests(orderBy: {field: UPDATED_AT, direction: DESC}, first: 50) {
       nodes {
         id
         number

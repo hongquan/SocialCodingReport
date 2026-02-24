@@ -12,192 +12,194 @@ Gtk.MultiSelection selection_model {
 }
 
 template $ReportPage: Adw.Bin {
-  child: Adw.ToolbarView {
-    [top]
-    Adw.HeaderBar {
-      [end]
-      Button {
-        icon-name: "emblem-system-symbolic";
-        tooltip-text: "Preferences";
-        action-name: "win.preferences";
+  child: Adw.ToastOverlay toast_overlay {
+    child: Adw.ToolbarView {
+      [top]
+      Adw.HeaderBar {
+        [end]
+        Button {
+          icon-name: "emblem-system-symbolic";
+          tooltip-text: "Preferences";
+          action-name: "win.preferences";
+        }
       }
-    }
 
-    [top]
-    Gtk.Box {
-      orientation: horizontal;
-      spacing: 12;
-      margin-top: 6;
-      margin-bottom: 6;
-      margin-start: 12;
-      margin-end: 12;
-
+      [top]
       Gtk.Box {
-        styles [
-          "linked",
-        ]
+        orientation: horizontal;
+        spacing: 12;
+        margin-top: 6;
+        margin-bottom: 6;
+        margin-start: 12;
+        margin-end: 12;
 
-        ToggleButton btn_last_7_days {
-          label: "Last 7 days";
-          group: btn_yesterday;
-          active: bind $is_last_7_days_active(template.date_named_range) as <bool>;
-          toggled => $on_date_range_toggled();
+        Gtk.Box {
+          styles [
+            "linked",
+          ]
+
+          ToggleButton btn_last_7_days {
+            label: "Last 7 days";
+            group: btn_yesterday;
+            active: bind $is_last_7_days_active(template.date_named_range) as <bool>;
+            toggled => $on_date_range_toggled();
+          }
+
+          ToggleButton btn_yesterday {
+            label: "Yesterday";
+            active: bind $is_yesterday_active(template.date_named_range) as <bool>;
+            toggled => $on_date_range_toggled();
+          }
+
+          ToggleButton btn_today {
+            label: "Today";
+            group: btn_yesterday;
+            active: bind $is_today_active(template.date_named_range) as <bool>;
+            toggled => $on_date_range_toggled();
+          }
         }
 
-        ToggleButton btn_yesterday {
-          label: "Yesterday";
-          active: bind $is_yesterday_active(template.date_named_range) as <bool>;
-          toggled => $on_date_range_toggled();
-        }
-
-        ToggleButton btn_today {
-          label: "Today";
-          group: btn_yesterday;
-          active: bind $is_today_active(template.date_named_range) as <bool>;
-          toggled => $on_date_range_toggled();
+        Button {
+          icon-name: "view-refresh-symbolic";
+          tooltip-text: "Refresh";
+          clicked => $on_refresh();
         }
       }
 
-      Button {
-        icon-name: "view-refresh-symbolic";
-        tooltip-text: "Refresh";
-        clicked => $on_refresh();
-      }
-    }
+      content: Gtk.Overlay {
+        child: Gtk.Paned {
+          orientation: vertical;
+          shrink-end-child: false;
+          shrink-start-child: false;
+          position: 400;
 
-    content: Gtk.Overlay {
-      child: Gtk.Paned {
-        orientation: vertical;
-        shrink-end-child: false;
-        shrink-start-child: false;
-        position: 400;
-
-        start-child: Gtk.ScrolledWindow {
-          vexpand: true;
-          margin-start: 6;
-          margin-end: 6;
-
-          child: Gtk.ColumnView activity_table {
-            model: selection_model;
-
-            Gtk.ColumnViewColumn {
-              factory: BuilderListItemFactory {
-                template ListItem {
-                  child: CheckButton {
-                    active: bind template.selected;
-                  };
-                }
-              };
-            }
-
-            Gtk.ColumnViewColumn {
-              title: "Repo";
-
-              factory: BuilderListItemFactory {
-                template ListItem {
-                  child: Label {
-                    label: bind template.item as <$ActivityItem>.repo_name;
-                  };
-                }
-              };
-            }
-
-            Gtk.ColumnViewColumn {
-              title: "Type";
-
-              factory: BuilderListItemFactory {
-                template ListItem {
-                  child: Label {
-                    label: bind template.item as <$ActivityItem>.type_char;
-                  };
-                }
-              };
-            }
-
-            Gtk.ColumnViewColumn {
-              title: "Author";
-
-              factory: BuilderListItemFactory {
-                template ListItem {
-                  child: Label {
-                    label: bind template.item as <$ActivityItem>.author;
-                  };
-                }
-              };
-            }
-
-            Gtk.ColumnViewColumn {
-              title: "Title";
-              expand: true;
-
-              factory: BuilderListItemFactory {
-                template ListItem {
-                  child: Label {
-                    label: bind template.item as <$ActivityItem>.display_title;
-                    use-markup: false;
-                    xalign: 0;
-                    ellipsize: end;
-                  };
-                }
-              };
-            }
-          };
-        };
-
-        end-child: Gtk.ScrolledWindow {
-          vexpand: true;
-          margin-start: 6;
-          margin-end: 6;
-          margin-top: 6;
-          margin-bottom: 6;
-
-          child: WebKit.WebView report_preview {
-            hexpand: true;
+          start-child: Gtk.ScrolledWindow {
             vexpand: true;
+            margin-start: 6;
+            margin-end: 6;
+
+            child: Gtk.ColumnView activity_table {
+              model: selection_model;
+
+              Gtk.ColumnViewColumn {
+                factory: BuilderListItemFactory {
+                  template ListItem {
+                    child: CheckButton {
+                      active: bind template.selected;
+                    };
+                  }
+                };
+              }
+
+              Gtk.ColumnViewColumn {
+                title: "Repo";
+
+                factory: BuilderListItemFactory {
+                  template ListItem {
+                    child: Label {
+                      label: bind template.item as <$ActivityItem>.repo_name;
+                    };
+                  }
+                };
+              }
+
+              Gtk.ColumnViewColumn {
+                title: "Type";
+
+                factory: BuilderListItemFactory {
+                  template ListItem {
+                    child: Label {
+                      label: bind template.item as <$ActivityItem>.type_char;
+                    };
+                  }
+                };
+              }
+
+              Gtk.ColumnViewColumn {
+                title: "Author";
+
+                factory: BuilderListItemFactory {
+                  template ListItem {
+                    child: Label {
+                      label: bind template.item as <$ActivityItem>.author;
+                    };
+                  }
+                };
+              }
+
+              Gtk.ColumnViewColumn {
+                title: "Title";
+                expand: true;
+
+                factory: BuilderListItemFactory {
+                  template ListItem {
+                    child: Label {
+                      label: bind template.item as <$ActivityItem>.display_title;
+                      use-markup: false;
+                      xalign: 0;
+                      ellipsize: end;
+                    };
+                  }
+                };
+              }
+            };
+          };
+
+          end-child: Gtk.ScrolledWindow {
+            vexpand: true;
+            margin-start: 6;
+            margin-end: 6;
+            margin-top: 6;
+            margin-bottom: 6;
+
+            child: WebKit.WebView report_preview {
+              hexpand: true;
+              vexpand: true;
+            };
           };
         };
+
+        [overlay]
+        Gtk.Spinner loading_spinner {
+          halign: center;
+          valign: center;
+          width-request: 48;
+          height-request: 48;
+
+          styles [
+            "large",
+          ]
+
+          visible: bind template.is_loading;
+          spinning: bind template.is_loading;
+        }
       };
 
-      [overlay]
-      Gtk.Spinner loading_spinner {
+      [bottom]
+      Gtk.Box {
+        orientation: horizontal;
+        spacing: 12;
+        margin-top: 12;
+        margin-bottom: 12;
+        margin-start: 12;
+        margin-end: 12;
         halign: center;
-        valign: center;
-        width-request: 48;
-        height-request: 48;
 
-        styles [
-          "large",
-        ]
+        Button btn_generate {
+          label: "Generate Report";
+          clicked => $on_generate();
 
-        visible: bind template.is_loading;
-        spinning: bind template.is_loading;
+          styles [
+            "suggested-action",
+          ]
+        }
+
+        Button btn_copy {
+          label: "Copy to Clipboard";
+          clicked => $on_copy();
+          sensitive: false;
+        }
       }
     };
-
-    [bottom]
-    Gtk.Box {
-      orientation: horizontal;
-      spacing: 12;
-      margin-top: 12;
-      margin-bottom: 12;
-      margin-start: 12;
-      margin-end: 12;
-      halign: center;
-
-      Button btn_generate {
-        label: "Generate Report";
-        clicked => $on_generate();
-
-        styles [
-          "suggested-action",
-        ]
-      }
-
-      Button btn_copy {
-        label: "Copy to Clipboard";
-        clicked => $on_copy();
-        sensitive: false;
-      }
-    }
   };
 }

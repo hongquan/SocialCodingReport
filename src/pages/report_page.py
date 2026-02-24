@@ -20,7 +20,7 @@ from logbook import Logger
 from ..config import ConfigManager
 from ..consts import ActivityAction, DateNamedRange, Host, TaskType
 from ..github_client import GitHubClient
-from ..models import ActivityItem, InvolvementActivity, RepoInfo, RepoItem, ReportActivity
+from ..models import ActivityItem, GraphQLQueryContext, InvolvementActivity, RepoInfo, RepoItem, ReportActivity
 from ..reporting import generate_report
 from ..schemas import GHGraphQLConnection, GHGraphQLResponse, GHSearchIssue
 
@@ -47,6 +47,7 @@ class ReportPage(Adw.Bin):
     activity_store: Gio.ListStore = Gtk.Template.Child()
     selection_model: Gtk.MultiSelection = Gtk.Template.Child()
     report_preview: WebKit.WebView = Gtk.Template.Child()
+    toast_overlay: Adw.ToastOverlay = Gtk.Template.Child()
     repo_store = Gio.ListStore(item_type=RepoItem)
 
     def __init__(self, **kwargs: Any):
@@ -138,20 +139,34 @@ class ReportPage(Adw.Bin):
             return
 
         self.github_token = github_account.token
+
+        self.toast_overlay.add_toast(Adw.Toast.new('Fetching data from GitHub...'))
+
         self.client.fetch_user_events(github_account.username, since_date, until_date, token=github_account.token)
 
         repo_list = [f'{rp.owner}/{rp.name}' for rp in self.repo_store]
         self.client.fetch_authored_prs(github_account.username, repos=repo_list, token=github_account.token)
 
     def on_activities_loaded(
-        self, client: GitHubClient, username: str, activities: Sequence[InvolvementActivity], error: str
+        self,
+        client: GitHubClient,
+        username: str,
+        activities: Sequence[InvolvementActivity],
+        error: str,
+        is_rate_limit: bool,
     ):
         # Clear loading state for ALL repos
         self.is_loading = False
 
         if error:
             log.error('Error loading data: {}', error)
+            if is_rate_limit:
+                self.toast_overlay.add_toast(Adw.Toast.new('Rate limited! Add a GitHub API token in Preferences.'))
+            else:
+                self.toast_overlay.add_toast(Adw.Toast.new(f'Error: {error}'))
             return
+
+        self.toast_overlay.add_toast(Adw.Toast.new('Data loaded successfully.'))
 
         # Filter items based on configured repos
         configured_repos = frozenset(f'{rp.owner}/{rp.name}' for rp in self.repo_store)
@@ -196,18 +211,24 @@ class ReportPage(Adw.Bin):
                 self.graphql_query,
                 {'owner': owner, 'name': name, 'since': since_iso},
                 token=self.github_token,
-                user_data=(items, owner, name),
+                user_data=GraphQLQueryContext(items=items, repo_owner=owner, repo_name=name),
             )
 
         log.info('Loaded {} activities for user {}', self.activity_store.get_n_items(), username)
 
     def on_titles_fetched(
-        self, client: GitHubClient, response_json: str, user_data: tuple[list[ActivityItem], str, str]
+        self,
+        client: GitHubClient,
+        response_json: str,
+        user_data: GraphQLQueryContext,
     ):
-        items, owner, name = user_data
+        items, owner, name = user_data.items, user_data.repo_owner, user_data.repo_name
+        is_rate_limit = user_data.is_rate_limit
 
         if not response_json:
-            log.warning('GraphQL response empty for {}/{}', owner, name)
+            log.warning('GraphQL response empty for {}/{} (is_rate_limit={})', owner, name, is_rate_limit)
+            if is_rate_limit:
+                self.toast_overlay.add_toast(Adw.Toast.new('Rate limited! Add a GitHub API token in Preferences.'))
             return
 
         try:
@@ -222,6 +243,9 @@ class ReportPage(Adw.Bin):
         title_map = extract_titles_from_connection(repo_data.issues)
         title_map.update(extract_titles_from_connection(repo_data.pullRequests))
 
+        log.debug('Titles found in GraphQL: {}', list(title_map.values()))
+        log.debug('IDs found in GraphQL: {}', list(title_map.keys()))
+
         update_count = 0
         for item in items:
             if item.database_id in title_map:
@@ -234,9 +258,13 @@ class ReportPage(Adw.Bin):
 
         log.info('Updated titles for {}/{} items: {}/{} found', owner, name, update_count, len(items))
 
-    def on_authored_prs_loaded(self, client: GitHubClient, username: str, prs: list[GHSearchIssue], error: str):
+    def on_authored_prs_loaded(
+        self, client: GitHubClient, username: str, prs: list[GHSearchIssue], error: str, is_rate_limit: bool
+    ):
         if error:
             log.error('Error loading authored PRs: {}', error)
+            if is_rate_limit:
+                self.toast_overlay.add_toast(Adw.Toast.new('Rate limited! Add a GitHub API token in Preferences.'))
             return
 
         configured_repos = frozenset(f'{rp.owner}/{rp.name}' for rp in self.repo_store)

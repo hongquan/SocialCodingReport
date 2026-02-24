@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime
-from http import HTTPMethod
+from http import HTTPMethod, HTTPStatus
 from typing import Any
 from urllib.parse import quote
 
@@ -14,7 +14,7 @@ from gi.repository import Gio, GLib, GObject, Soup
 from logbook import Logger
 from pydantic import TypeAdapter
 
-from .models import InvolvementActivity
+from .models import GraphQLQueryContext, InvolvementActivity
 from .schemas import (
     GHIssueCommentEvent,
     GHIssuesEvent,
@@ -30,9 +30,9 @@ log = Logger(__name__)
 
 class GitHubClient(GObject.Object):
     __gsignals__ = {
-        'user-activities-fetched': (GObject.SignalFlags.RUN_FIRST, None, (str, object, str)),
+        'user-activities-fetched': (GObject.SignalFlags.RUN_FIRST, None, (str, object, str, bool)),
         'graphql-query-done': (GObject.SignalFlags.RUN_FIRST, None, (str, object)),
-        'authored-prs-fetched': (GObject.SignalFlags.RUN_FIRST, None, (str, object, str)),
+        'authored-prs-fetched': (GObject.SignalFlags.RUN_FIRST, None, (str, object, str, bool)),
     }
 
     def __init__(self):
@@ -80,14 +80,17 @@ class GitHubClient(GObject.Object):
             bytes_data = session.send_and_read_finish(result)
         except GLib.Error as e:
             log.error('Network error during fetch: {}', e)
-            self.emit('user-activities-fetched', username, [], str(e))
+            self.emit('user-activities-fetched', username, [], str(e), False)
             return
-        # Call `get_async_result_message` to get the HTTP status code
         msg = session.get_async_result_message(result)
         status_code = msg.get_status()
-        if status_code != Soup.Status.OK:
-            log.error('GitHub API returned status code: {}', status_code)
-            self.emit('user-activities-fetched', username, [], f'GitHub API Error: Status {status_code}')
+        if status_code != HTTPStatus.OK:
+            error_msg = f'GitHub API Error: Status {status_code}'
+            is_rate_limit = status_code in (HTTPStatus.FORBIDDEN, HTTPStatus.TOO_MANY_REQUESTS)
+            if is_rate_limit:
+                error_msg = f'Rate Limit: {error_msg}'
+            log.error(error_msg)
+            self.emit('user-activities-fetched', username, [], error_msg, is_rate_limit)
             return
 
         raw_data = bytes_data.get_data()
@@ -111,10 +114,16 @@ class GitHubClient(GObject.Object):
                 case _:
                     # Ignore other event types
                     log.debug('Ignoring event type: {}', gh_event.type)
-        self.emit('user-activities-fetched', username, items, '')
+        self.emit('user-activities-fetched', username, items, '', False)
         log.info('Processed {} involvement activities for {}', len(items), username)
 
-    def run_graphql_query(self, query: str, variables: dict[str, Any], token: str | None = None, user_data: Any = None):
+    def run_graphql_query(
+        self,
+        query: str,
+        variables: dict[str, Any],
+        token: str | None = None,
+        user_data: GraphQLQueryContext | None = None,
+    ):
         url = 'https://api.github.com/graphql'
         msg = Soup.Message.new(HTTPMethod.POST, url)
         msg.get_request_headers().append('User-Agent', self.user_agent)
@@ -136,7 +145,7 @@ class GitHubClient(GObject.Object):
             user_data,
         )
 
-    def on_graphql_query_done(self, session: Soup.Session, result: Gio.AsyncResult, user_data: Any):
+    def on_graphql_query_done(self, session: Soup.Session, result: Gio.AsyncResult, user_data: GraphQLQueryContext):
         try:
             bytes_data = session.send_and_read_finish(result)
         except GLib.Error as e:
@@ -146,8 +155,14 @@ class GitHubClient(GObject.Object):
 
         msg = session.get_async_result_message(result)
         status_code = msg.get_status()
-        if status_code != Soup.Status.OK:
-            log.error('GitHub API (GraphQL) returned status code: {}', status_code)
+        if status_code != HTTPStatus.OK:
+            error_msg = f'GitHub API (GraphQL) error: Status {status_code}'
+            is_rate_limit = status_code in (HTTPStatus.FORBIDDEN, HTTPStatus.TOO_MANY_REQUESTS)
+            if is_rate_limit:
+                error_msg = f'Rate Limit: {error_msg}'
+            log.error(error_msg)
+            if hasattr(user_data, 'is_rate_limit'):
+                user_data.is_rate_limit = is_rate_limit
             self.emit('graphql-query-done', '', user_data)
             return
 
@@ -203,21 +218,25 @@ class GitHubClient(GObject.Object):
             bytes_data = session.send_and_read_finish(result)
         except GLib.Error as e:
             log.error('Network error during authored PRs fetch: {}', e)
-            self.emit('authored-prs-fetched', username, [], str(e))
+            self.emit('authored-prs-fetched', username, [], str(e), False)
             return
 
         msg = session.get_async_result_message(result)
         status_code = msg.get_status()
-        if status_code != Soup.Status.OK:
-            log.error('GitHub API (Search) returned status code: {}', status_code)
-            self.emit('authored-prs-fetched', username, [], f'GitHub API Error: Status {status_code}')
+        if status_code != HTTPStatus.OK:
+            error_msg = f'GitHub API Error: Status {status_code}'
+            is_rate_limit = status_code in (HTTPStatus.FORBIDDEN, HTTPStatus.TOO_MANY_REQUESTS)
+            if is_rate_limit:
+                error_msg = f'Rate Limit: {error_msg}'
+            log.error(error_msg)
+            self.emit('authored-prs-fetched', username, [], error_msg, is_rate_limit)
             return
 
         raw_data = bytes_data.get_data()
         try:
             response = GHSearchResponse.model_validate_json(raw_data)
-            self.emit('authored-prs-fetched', username, response.items, '')
+            self.emit('authored-prs-fetched', username, response.items, '', False)
             log.info('Fetched {} authored PRs for {}', len(response.items), username)
         except Exception as e:
             log.error('Error parsing search response: {}', e)
-            self.emit('authored-prs-fetched', username, [], str(e))
+            self.emit('authored-prs-fetched', username, [], str(e), False)
