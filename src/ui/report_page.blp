@@ -3,12 +3,20 @@ using Adw 1;
 using Gio 2.0;
 using WebKit 6.0;
 
-Gio.ListStore activity_store {
+Gio.ListStore past_activity_store {
   item-type: typeof<$ActivityItem>;
 }
 
-Gtk.MultiSelection selection_model {
-  model: activity_store;
+Gio.ListStore today_activity_store {
+  item-type: typeof<$ActivityItem>;
+}
+
+Gtk.MultiSelection past_selection_model {
+  model: past_activity_store;
+}
+
+Gtk.MultiSelection today_selection_model {
+  model: today_activity_store;
 }
 
 template $ReportPage: Adw.Bin {
@@ -78,66 +86,142 @@ template $ReportPage: Adw.Bin {
             margin-start: 6;
             margin-end: 6;
 
-            child: Gtk.ColumnView activity_table {
-              model: selection_model;
+            child: Adw.ViewStack view_stack {
+              Adw.ViewStackPage {
+                name: "past";
 
-              Gtk.ColumnViewColumn {
-                factory: BuilderListItemFactory {
-                  template ListItem {
-                    child: CheckButton {
-                      active: bind template.selected;
+                child: Gtk.ColumnView past_activity_table {
+                  model: past_selection_model;
+
+                  Gtk.ColumnViewColumn {
+                    factory: BuilderListItemFactory {
+                      template ListItem {
+                        child: CheckButton {
+                          active: bind template.selected bidirectional;
+                        };
+                      }
+                    };
+                  }
+
+                  Gtk.ColumnViewColumn {
+                    title: "Repo";
+
+                    factory: BuilderListItemFactory {
+                      template ListItem {
+                        child: Label {
+                          label: bind template.item as <$ActivityItem>.repo_name;
+                        };
+                      }
+                    };
+                  }
+
+                  Gtk.ColumnViewColumn {
+                    title: "Type";
+
+                    factory: BuilderListItemFactory {
+                      template ListItem {
+                        child: Label {
+                          label: bind template.item as <$ActivityItem>.type_char;
+                        };
+                      }
+                    };
+                  }
+
+                  Gtk.ColumnViewColumn {
+                    title: "Author";
+
+                    factory: BuilderListItemFactory {
+                      template ListItem {
+                        child: Label {
+                          label: bind template.item as <$ActivityItem>.author;
+                        };
+                      }
+                    };
+                  }
+
+                  Gtk.ColumnViewColumn {
+                    title: "Title";
+                    expand: true;
+
+                    factory: BuilderListItemFactory {
+                      template ListItem {
+                        child: Label {
+                          label: bind template.item as <$ActivityItem>.display_title;
+                          use-markup: false;
+                          xalign: 0;
+                          ellipsize: end;
+                        };
+                      }
                     };
                   }
                 };
               }
 
-              Gtk.ColumnViewColumn {
-                title: "Repo";
+              Adw.ViewStackPage {
+                name: "today";
 
-                factory: BuilderListItemFactory {
-                  template ListItem {
-                    child: Label {
-                      label: bind template.item as <$ActivityItem>.repo_name;
+                child: Gtk.ColumnView today_activity_table {
+                  model: today_selection_model;
+
+                  Gtk.ColumnViewColumn {
+                    factory: BuilderListItemFactory {
+                      template ListItem {
+                        child: CheckButton {
+                          active: bind template.selected bidirectional;
+                        };
+                      }
                     };
                   }
-                };
-              }
 
-              Gtk.ColumnViewColumn {
-                title: "Type";
+                  Gtk.ColumnViewColumn {
+                    title: "Repo";
 
-                factory: BuilderListItemFactory {
-                  template ListItem {
-                    child: Label {
-                      label: bind template.item as <$ActivityItem>.type_char;
+                    factory: BuilderListItemFactory {
+                      template ListItem {
+                        child: Label {
+                          label: bind template.item as <$ActivityItem>.repo_name;
+                        };
+                      }
                     };
                   }
-                };
-              }
 
-              Gtk.ColumnViewColumn {
-                title: "Author";
+                  Gtk.ColumnViewColumn {
+                    title: "Type";
 
-                factory: BuilderListItemFactory {
-                  template ListItem {
-                    child: Label {
-                      label: bind template.item as <$ActivityItem>.author;
+                    factory: BuilderListItemFactory {
+                      template ListItem {
+                        child: Label {
+                          label: bind template.item as <$ActivityItem>.type_char;
+                        };
+                      }
                     };
                   }
-                };
-              }
 
-              Gtk.ColumnViewColumn {
-                title: "Title";
-                expand: true;
+                  Gtk.ColumnViewColumn {
+                    title: "Author";
 
-                factory: BuilderListItemFactory {
-                  template ListItem {
-                    child: Label {
-                      label: bind template.item as <$ActivityItem>.display_title;
-                      use-markup: false;
-                      xalign: 0;
-                      ellipsize: end;
+                    factory: BuilderListItemFactory {
+                      template ListItem {
+                        child: Label {
+                          label: bind template.item as <$ActivityItem>.author;
+                        };
+                      }
+                    };
+                  }
+
+                  Gtk.ColumnViewColumn {
+                    title: "Title";
+                    expand: true;
+
+                    factory: BuilderListItemFactory {
+                      template ListItem {
+                        child: Label {
+                          label: bind template.item as <$ActivityItem>.display_title;
+                          use-markup: false;
+                          xalign: 0;
+                          ellipsize: end;
+                        };
+                      }
                     };
                   }
                 };

@@ -13,6 +13,8 @@ class ActivityGrouping:
     created_prs: list[ReportActivity]
     reviewed_prs: list[ReportActivity]
     created_issues: list[ReportActivity]
+    updated_issues: list[ReportActivity]
+    others: list[ReportActivity]
 
 
 def group_activities_by_repo(activities: Sequence[ReportActivity]) -> dict[str, ActivityGrouping]:
@@ -31,15 +33,25 @@ def group_activities_by_repo(activities: Sequence[ReportActivity]) -> dict[str, 
                 created_prs=[],
                 reviewed_prs=[],
                 created_issues=[],
+                updated_issues=[],
+                others=[],
             )
         if activity.task_type == TaskType.PR:
             if activity.action == ActivityAction.CREATED_PR:
                 grouped[activity.repo_long_name].created_prs.append(activity)
             elif activity.action == ActivityAction.REVIEWED_PR:
                 grouped[activity.repo_long_name].reviewed_prs.append(activity)
+            else:
+                grouped[activity.repo_long_name].others.append(activity)
         elif activity.task_type == TaskType.ISSUE:
             if activity.action == ActivityAction.CREATED_ISSUE:
                 grouped[activity.repo_long_name].created_issues.append(activity)
+            elif activity.action == ActivityAction.UPDATED_ISSUE:
+                grouped[activity.repo_long_name].updated_issues.append(activity)
+            else:
+                grouped[activity.repo_long_name].others.append(activity)
+        else:
+            grouped[activity.repo_long_name].others.append(activity)
 
     return grouped
 

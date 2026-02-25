@@ -38,14 +38,18 @@ class ReportPage(Adw.Bin):
 
     date_named_range = GObject.Property(type=str, default=DateNamedRange.YESTERDAY.value)
     is_loading = GObject.Property(type=bool, default=False)
-    activity_table: Gtk.ColumnView = Gtk.Template.Child()
     btn_generate: Gtk.Button = Gtk.Template.Child()
     btn_yesterday: Gtk.ToggleButton = Gtk.Template.Child()
     btn_today: Gtk.ToggleButton = Gtk.Template.Child()
     btn_last_7_days: Gtk.ToggleButton = Gtk.Template.Child()
     btn_copy: Gtk.Button = Gtk.Template.Child()
-    activity_store: Gio.ListStore = Gtk.Template.Child()
-    selection_model: Gtk.MultiSelection = Gtk.Template.Child()
+    past_activity_store: Gio.ListStore = Gtk.Template.Child()
+    today_activity_store: Gio.ListStore = Gtk.Template.Child()
+    past_selection_model: Gtk.MultiSelection = Gtk.Template.Child()
+    today_selection_model: Gtk.MultiSelection = Gtk.Template.Child()
+    past_activity_table: Gtk.ColumnView = Gtk.Template.Child()
+    today_activity_table: Gtk.ColumnView = Gtk.Template.Child()
+    view_stack: Adw.ViewStack = Gtk.Template.Child()
     report_preview: WebKit.WebView = Gtk.Template.Child()
     toast_overlay: Adw.ToastOverlay = Gtk.Template.Child()
     repo_store = Gio.ListStore(item_type=RepoItem)
@@ -59,12 +63,15 @@ class ReportPage(Adw.Bin):
         self.client.connect('authored-prs-fetched', self.on_authored_prs_loaded)
         self.config = ConfigManager()
         self.github_token = None
-        self.today_activities: list[ActivityItem] = []
-        self.ongoing_activities: list[ActivityItem] = []
+        self.github_token = None
         self.current_report_html = ''
         resource_path = '/vn/ququ/SocialCodingReport/queries/list-issues.gql'
         bytes_data = Gio.resources_lookup_data(resource_path, Gio.ResourceLookupFlags.NONE)
         self.graphql_query = bytes_data.get_data().decode('utf-8')
+
+        # Connect selection models
+        self.past_selection_model.connect('selection-changed', self.on_selection_changed, self.past_activity_store)
+        self.today_selection_model.connect('selection-changed', self.on_selection_changed, self.today_activity_store)
 
         # Initial load
         GLib.idle_add(self.load_data)
@@ -100,6 +107,10 @@ class ReportPage(Adw.Bin):
 
         if new_state != self.date_named_range:
             self.date_named_range = new_state
+            if new_state == DateNamedRange.TODAY:
+                self.view_stack.set_visible_child_name('today')
+            else:
+                self.view_stack.set_visible_child_name('past')
             self.load_data()
 
     def load_data(self):
@@ -113,15 +124,15 @@ class ReportPage(Adw.Bin):
         if state == DateNamedRange.YESTERDAY:
             since_date = today_start - timedelta(days=1)
             until_date = today_start
+            self.past_activity_store.remove_all()
         elif state == DateNamedRange.LAST_7_DAYS:
             since_date = today_start - timedelta(days=7)
             until_date = today_start
+            self.past_activity_store.remove_all()
         else:
             since_date = today_start
             until_date = now
-
-        # Clear current
-        self.activity_store.remove_all()
+            self.today_activity_store.remove_all()
 
         repos = self.config.load_repositories()
         if not repos:
@@ -178,26 +189,34 @@ class ReportPage(Adw.Bin):
         configured_repos = frozenset(f'{rp.owner}/{rp.name}' for rp in self.repo_store)
         log.debug('Configured repos: {}', configured_repos)
 
+        target_store = (
+            self.today_activity_store if self.date_named_range == DateNamedRange.TODAY else self.past_activity_store
+        )
+
         for act in activities:
             if act.repo_long_name in configured_repos:
                 item = ActivityItem.from_activity_data(act)
-                # Ensure no duplicates in activity_store
-                if not any(existing.database_id == item.database_id for existing in self.activity_store):
-                    self.activity_store.append(item)
-
-        # Update today_activities if we are on the Today tab
-        if self.date_named_range == DateNamedRange.TODAY:
-            self.today_activities = [item for item in self.activity_store]
+                # Ensure no duplicates in the store
+                if not any(existing.database_id == item.database_id for existing in target_store):
+                    target_store.append(item)
+                    # Select by default in the UI model
+                    selection_model = (
+                        self.today_selection_model
+                        if self.date_named_range == DateNamedRange.TODAY
+                        else self.past_selection_model
+                    )
+                    selection_model.select_item(target_store.get_n_items() - 1, False)
 
         # Check for missing titles
         missing_items_by_repo: dict[tuple[str, str], list[ActivityItem]] = {}
-        for item in self.activity_store:
-            # Check for no title and valid database_id
-            if not item.title and item.database_id:
-                key = (item.repo_owner, item.repo_name)
-                if key not in missing_items_by_repo:
-                    missing_items_by_repo[key] = []
-                missing_items_by_repo[key].append(item)
+        for store in [self.past_activity_store, self.today_activity_store]:
+            for item in store:
+                # Check for no title and valid database_id
+                if not item.title and item.database_id:
+                    key = (item.repo_owner, item.repo_name)
+                    if key not in missing_items_by_repo:
+                        missing_items_by_repo[key] = []
+                    missing_items_by_repo[key].append(item)
 
         for (owner, name), items in missing_items_by_repo.items():
             if not items:
@@ -220,7 +239,11 @@ class ReportPage(Adw.Bin):
                 user_data=GraphQLQueryContext(items=items, repo_owner=owner, repo_name=name),
             )
 
-        log.info('Loaded {} activities for user {}', self.activity_store.get_n_items(), username)
+        log.info(
+            'Loaded activities. Past: {}, Today: {}',
+            self.past_activity_store.get_n_items(),
+            self.today_activity_store.get_n_items(),
+        )
 
     def on_titles_fetched(
         self,
@@ -274,7 +297,7 @@ class ReportPage(Adw.Bin):
             return
 
         configured_repos = frozenset(f'{rp.owner}/{rp.name}' for rp in self.repo_store)
-        self.ongoing_activities = []
+        self.ongoing_activities = []  # Just for internal ref if needed, but not using it anymore
 
         for pr in prs:
             if pr.repo_long_name in configured_repos:
@@ -292,17 +315,19 @@ class ReportPage(Adw.Bin):
                     number=pr.number,
                 )
                 item = ActivityItem.from_activity_data(activity)
-                self.ongoing_activities.append(item)
 
-                # If we are on Today tab, add to UI store too
-                if self.date_named_range == DateNamedRange.TODAY:
-                    if not any(existing.database_id == item.database_id for existing in self.activity_store):
-                        self.activity_store.append(item)
+                # Ensure no duplicates in today_activity_store
+                if not any(existing.database_id == item.database_id for existing in self.today_activity_store):
+                    self.today_activity_store.append(item)
+                    self.today_selection_model.select_item(self.today_activity_store.get_n_items() - 1, False)
 
-        if self.date_named_range == DateNamedRange.TODAY:
-            self.today_activities = [item for item in self.activity_store]
+        log.info('Loaded ongoing PRs for user {}', username)
 
-        log.info('Loaded {} ongoing PRs for user {}', len(self.ongoing_activities), username)
+    def on_selection_changed(self, model: Gtk.SelectionModel, position: int, n_items: int, store: Gio.ListStore):
+        for i in range(position, position + n_items):
+            item = store.get_item(i)
+            if item:
+                item.selected = model.is_selected(i)
 
     @Gtk.Template.Callback()
     def on_refresh(self, btn: Gtk.Button):
@@ -310,58 +335,55 @@ class ReportPage(Adw.Bin):
 
     @Gtk.Template.Callback()
     def on_generate(self, btn: Gtk.Button):
-        selected_items = []
-        for i, item in enumerate(self.activity_store):
-            if self.selection_model.is_selected(i):
-                selected_items.append(item)
+        # Yesterday section: Selected items from past_activity_store.
+        # Today section: All items from today_activity_store.
 
-        activities = []
-        for item in selected_items:
-            # Reconstruct ActivityData and RepoInfo
-            # We assume GitHub host for now.
-            repo_info = RepoInfo(name=item.repo_name, owner=item.repo_owner, host=Host.GITHUB)
+        past_activities = []
+        for item in self.past_activity_store:
+            if item.selected:
+                repo_info = RepoInfo(name=item.repo_name, owner=item.repo_owner, host=Host.GITHUB)
 
-            activity = ReportActivity(
-                title=item.title,
-                api_url=item.api_url,
-                html_url=item.url,
-                task_type=TaskType(item.task_type),
-                action=ActivityAction(item.action),
-                author=item.author,
-                created_at=item.created_at,
-                repo_info=repo_info,
-                database_id=item.database_id,
-                number=item.number,
-            )
-            activities.append(activity)
+                activity = ReportActivity(
+                    title=item.title,
+                    api_url=item.api_url,
+                    html_url=item.url,
+                    task_type=TaskType(item.task_type),
+                    action=ActivityAction(item.action),
+                    author=item.author,
+                    created_at=item.created_at,
+                    repo_info=repo_info,
+                    database_id=item.database_id,
+                    number=item.number,
+                )
+                past_activities.append(activity)
 
         today_plans = []
-        # Merge today_activities and ongoing_activities, avoiding duplicates by database_id
-        seen_ids = set()
+        # If user is on TODAY tab, they might want to select specific plans?
+        # If nothing is selected in today tab, we include everything.
+        # If something is selected, only include selected.
 
-        all_today_items = self.today_activities + self.ongoing_activities
+        has_today_selection = any(item.selected for item in self.today_activity_store)
 
-        for item in all_today_items:
-            if item.database_id in seen_ids:
-                continue
-            seen_ids.add(item.database_id)
+        for item in self.today_activity_store:
+            # If there is a selection, only include selected ones.
+            # Otherwise, include everything from today_activity_store.
+            if not has_today_selection or item.selected:
+                repo_info = RepoInfo(name=item.repo_name, owner=item.repo_owner, host=Host.GITHUB)
+                activity = ReportActivity(
+                    title=item.title,
+                    api_url=item.api_url,
+                    html_url=item.url,
+                    task_type=TaskType(item.task_type),
+                    action=ActivityAction(item.action),
+                    author=item.author,
+                    created_at=item.created_at,
+                    repo_info=repo_info,
+                    database_id=item.database_id,
+                    number=item.number,
+                )
+                today_plans.append(activity)
 
-            repo_info = RepoInfo(name=item.repo_name, owner=item.repo_owner, host=Host.GITHUB)
-            activity = ReportActivity(
-                title=item.title,
-                api_url=item.api_url,
-                html_url=item.url,
-                task_type=TaskType(item.task_type),
-                action=ActivityAction(item.action),
-                author=item.author,
-                created_at=item.created_at,
-                repo_info=repo_info,
-                database_id=item.database_id,
-                number=item.number,
-            )
-            today_plans.append(activity)
-
-        html_content = generate_report(activities, today_plans)
+        html_content = generate_report(past_activities, today_plans)
         self.current_report_html = html_content
 
         self.report_preview.load_html(html_content, None)

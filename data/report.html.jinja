@@ -8,7 +8,7 @@
   <h2 style='font-size: 13px; font-weight: bold; margin-bottom: 6px;'>1. What did I do yesterday?</h2>
   <div>
     {% for repo, group in yesterday.items() %}
-      {% if group.created_prs or group.reviewed_prs or group.created_issues %}
+      {% if group.created_prs or group.reviewed_prs or group.created_issues or group.updated_issues or group.others %}
         <p style='margin: 3px 0;'><i>{{ group.repo_shortname }}</i></p>
         <ul style='margin-top: 3px;'>
           {% for pr in group.created_prs %}
@@ -20,6 +20,12 @@
           {% for issue in group.created_issues %}
             <li>Created Issue: <a href='{{ issue.html_url }}'>#{{ issue.number }}</a> ({{ issue.title }})</li>
           {% endfor %}
+          {% for issue in group.updated_issues %}
+            <li>Updated Issue: <a href='{{ issue.html_url }}'>#{{ issue.number }}</a> ({{ issue.title }})</li>
+          {% endfor %}
+          {% for act in group.others %}
+            <li>{{ act.action.replace('-', ' ').capitalize() }}: <a href='{{ act.html_url }}'>#{{ act.number }}</a> ({{ act.title }})</li>
+          {% endfor %}
         </ul>
       {% endif %}
     {% endfor %}
@@ -29,7 +35,7 @@
   <div id='plans'>
     {% if today %}
       {% for repo, group in today.items() %}
-        {% if group.created_prs or group.reviewed_prs or group.created_issues %}
+        {% if group.created_prs or group.reviewed_prs or group.created_issues or group.updated_issues or group.others %}
           <p style='margin: 3px 0;'><i>{{ group.repo_shortname }}</i></p>
           <ul style='margin-top: 3px;'>
             {% for pr in group.created_prs %}
@@ -40,6 +46,12 @@
             {% endfor %}
             {% for issue in group.created_issues %}
               <li><a href='{{ issue.html_url }}'>#{{ issue.number }}</a> ({{ issue.title }})</li>
+            {% endfor %}
+            {% for issue in group.updated_issues %}
+              <li><a href='{{ issue.html_url }}'>#{{ issue.number }}</a> ({{ issue.title }})</li>
+            {% endfor %}
+            {% for act in group.others %}
+              <li><a href='{{ act.html_url }}'>#{{ act.number }}</a> ({{ act.title }})</li>
             {% endfor %}
           </ul>
         {% endif %}
