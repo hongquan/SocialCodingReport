@@ -96,8 +96,8 @@ template $ReportPage: Adw.Bin {
                   Gtk.ColumnViewColumn {
                     factory: BuilderListItemFactory {
                       template ListItem {
-                        child: CheckButton {
-                          active: bind template.selected bidirectional;
+                        child: Image {
+                          icon-name: bind template.item as <$ActivityItem>.icon_name;
                         };
                       }
                     };
@@ -166,8 +166,8 @@ template $ReportPage: Adw.Bin {
                   Gtk.ColumnViewColumn {
                     factory: BuilderListItemFactory {
                       template ListItem {
-                        child: CheckButton {
-                          active: bind template.selected bidirectional;
+                        child: Image {
+                          icon-name: bind template.item as <$ActivityItem>.icon_name;
                         };
                       }
                     };

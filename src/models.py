@@ -190,6 +190,10 @@ class ActivityItem(GObject.Object):
     def display_title(self) -> str:
         return self.title if self.title else '(No Title)'
 
+    @GObject.Property(type=str)
+    def icon_name(self) -> str:
+        return 'checkbox-checked-symbolic' if self.selected else 'checkbox-symbolic'
+
     @classmethod
     def from_activity_data(cls, data: InvolvementActivity) -> Self:
         type_char = 'I' if data.task_type == TaskType.ISSUE else 'P'
