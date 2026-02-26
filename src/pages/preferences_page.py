@@ -105,10 +105,8 @@ class PreferencesPage(Adw.Bin):
         text = entry.get_text().strip()
         if text:
             # Check for duplicate
-            for i in range(self.repo_store.get_n_items()):
-                item = self.repo_store.get_item(i)
-                if item.display_name == text:
-                    return
+            if any(item.display_name == text for item in self.repo_store):
+                return
 
             # Check format "owner/name"
             if '/' not in text:
@@ -159,8 +157,7 @@ class PreferencesPage(Adw.Bin):
 
         # Update UI store
         found_in_store = False
-        for i in range(self.account_store.get_n_items()):
-            item = self.account_store.get_item(i)
+        for item in self.account_store:
             if item.host == host:
                 item.username = username
                 item.token = token or ''
@@ -195,8 +192,7 @@ class PreferencesPage(Adw.Bin):
         owner, name = repo_display_name.split('/', 1)
 
         # Remove from store
-        for i in range(self.repo_store.get_n_items()):
-            item = self.repo_store.get_item(i)
+        for i, item in enumerate(self.repo_store):
             if item.owner == owner and item.name == name:
                 self.repo_store.remove(i)
                 break
@@ -210,8 +206,7 @@ class PreferencesPage(Adw.Bin):
         host = parameter.get_string()
 
         # Remove from store
-        for i in range(self.account_store.get_n_items()):
-            item = self.account_store.get_item(i)
+        for i, item in enumerate(self.account_store):
             if item.host == host:
                 self.account_store.remove(i)
                 break
