@@ -50,6 +50,7 @@ class ReportPage(Adw.Bin):
     today_selection_model: Gtk.MultiSelection = Gtk.Template.Child()
     past_activity_table: Gtk.ColumnView = Gtk.Template.Child()
     today_activity_table: Gtk.ColumnView = Gtk.Template.Child()
+    report_paned: Gtk.Paned = Gtk.Template.Child()
     view_stack: Adw.ViewStack = Gtk.Template.Child()
     report_preview: WebKit.WebView = Gtk.Template.Child()
     toast_overlay: Adw.ToastOverlay = Gtk.Template.Child()
@@ -397,8 +398,15 @@ class ReportPage(Adw.Bin):
         self.report_preview.load_html(html_content, None)
         self.btn_copy.set_sensitive(True)
 
+        # Auto-expand preview if there is content
+        if past_activities or today_plans:
+            # We want preview to occupy roughly 60% of the space
+            # So we set position to 40% of the height
+            height = self.report_paned.get_height()
+            if height > 0:
+                self.report_paned.set_position(int(height * 0.4))
+
         self.add_toast('Report generated successfully.')
-        log.info('Report generated and displayed in preview.')
 
     @Gtk.Template.Callback()
     def on_copy(self, btn: Gtk.Button):
