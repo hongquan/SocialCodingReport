@@ -43,6 +43,7 @@ class ReportPage(Adw.Bin):
     btn_today: Gtk.ToggleButton = Gtk.Template.Child()
     btn_last_7_days: Gtk.ToggleButton = Gtk.Template.Child()
     btn_copy: Gtk.Button = Gtk.Template.Child()
+    btn_refresh: Gtk.Button = Gtk.Template.Child()
     past_activity_store: Gio.ListStore = Gtk.Template.Child()
     today_activity_store: Gio.ListStore = Gtk.Template.Child()
     past_selection_model: Gtk.MultiSelection = Gtk.Template.Child()
@@ -74,7 +75,7 @@ class ReportPage(Adw.Bin):
         self.today_selection_model.connect('selection-changed', self.on_selection_changed, self.today_activity_store)
 
         # Initial load
-        GLib.idle_add(self.load_data)
+        GLib.idle_add(self.fetch_remote_activities)
 
     def add_toast(self, message: str, timeout: int = 5) -> None:
         """Add a toast with optional timeout in seconds."""
@@ -111,11 +112,18 @@ class ReportPage(Adw.Bin):
                 self.view_stack.set_visible_child_name('today')
             else:
                 self.view_stack.set_visible_child_name('past')
-            self.load_data()
+            self.fetch_remote_activities(force=False)
 
-    def load_data(self):
+    def fetch_remote_activities(self, force: bool = False):
         self.is_loading = True
         state = DateNamedRange(self.date_named_range)
+
+        # Skip fetching if data is already present and not forced
+        target_store = self.today_activity_store if state == DateNamedRange.TODAY else self.past_activity_store
+        if not force and len(target_store) > 0:
+            log.info('Data already present for {}, skipping fetch.', state)
+            self.is_loading = False
+            return
 
         # Determine date
         now = datetime.now().astimezone()
@@ -205,7 +213,7 @@ class ReportPage(Adw.Bin):
                         if self.date_named_range == DateNamedRange.TODAY
                         else self.past_selection_model
                     )
-                    selection_model.select_item(target_store.get_n_items() - 1, False)
+                    selection_model.select_item(len(target_store) - 1, False)
 
         # Check for missing titles
         missing_items_by_repo: dict[tuple[str, str], list[ActivityItem]] = {}
@@ -241,8 +249,8 @@ class ReportPage(Adw.Bin):
 
         log.info(
             'Loaded activities. Past: {}, Today: {}',
-            self.past_activity_store.get_n_items(),
-            self.today_activity_store.get_n_items(),
+            len(self.past_activity_store),
+            len(self.today_activity_store),
         )
 
     def on_titles_fetched(
@@ -319,7 +327,7 @@ class ReportPage(Adw.Bin):
                 # Ensure no duplicates in today_activity_store
                 if not any(existing.database_id == item.database_id for existing in self.today_activity_store):
                     self.today_activity_store.append(item)
-                    self.today_selection_model.select_item(self.today_activity_store.get_n_items() - 1, False)
+                    self.today_selection_model.select_item(len(self.today_activity_store) - 1, False)
 
         log.info('Loaded ongoing PRs for user {}', username)
 
@@ -331,7 +339,7 @@ class ReportPage(Adw.Bin):
 
     @Gtk.Template.Callback()
     def on_refresh(self, btn: Gtk.Button):
-        self.load_data()
+        self.fetch_remote_activities(force=True)
 
     @Gtk.Template.Callback()
     def on_generate(self, btn: Gtk.Button):

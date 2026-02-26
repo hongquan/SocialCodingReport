@@ -1,16 +1,16 @@
 # Social Coding Report
 
-![Social Coding Report Logo](https://quan-images.b-cdn.net/app-icons/vn.ququ.SocialCodingReport.svg)
+![Social Coding Report Logo](https://raw.githubusercontent.com/hongquan/SocialCodingReport/refs/heads/main/data/vn.ququ.SocialCodingReport.svg)
 
 A modern GTK4 + LibAdwaita application that helps you generate daily reports of your GitHub activity (Issues and Pull Requests). It fetches data from configured repositories and lets you select items to copy as a formatted HTML list.
 
 ## Features
 
 - Modern UI: Built with GTK4 and LibAdwaita for a native GNOME experience.
-- GitHub Integration: Fetches "Yesterday" or "Today" activity from your specified repositories.
-- Filtering: Quickly toggle between yesterday's and today's work.
+- GitHub Integration: Fetches activity from "Today", "Yesterday", or "Last 7 days" across your specified repositories.
+- Filtering: Quickly toggle between different activity periods.
 - Report Generation: Select activities and generate an HTML unordered list for easy pasting into reports or chats.
-- Secure: Uses `GITHUB_TOKEN` from your environment.
+- Secure: Manage multiple GitHub accounts and tokens directly in the app, with `GITHUB_TOKEN` environment variable support as fallback.
 
 ## Requirements
 
@@ -65,11 +65,15 @@ This project uses the Meson build system.
 ## Running the Application
 
 ### 1. GitHub Token
-The application requires a GitHub Personal Access Token to fetch data. Export it as an environment variable:
+The application requires a GitHub Personal Access Token to fetch data. You can manage this in the **Preferences** window within the application.
+
+Alternatively, you can export it as an environment variable:
 
 ```bash
 export GITHUB_TOKEN="your_github_token_here"
 ```
+
+If both are present, the token configured in the application takes precedence.
 
 ### 2. Launch
 After installation, you can run the application directly:
@@ -106,7 +110,11 @@ $ ninja -C __build uninstall
 
 ## Configuration
 
-Repositories can be managed directly via the Preferences window in the application.
+Accounts and repositories are managed directly via the **Preferences** window in the application.
+
+- **GitHub Accounts**: Add your username and an optional token.
+- **GitHub Repositories**: Add repositories in `owner/repo` format (e.g., `fossasia/eventyay`).
+
 Configuration is stored in `~/.config/socialcodingreport/config.toml`.
 
 ## License
