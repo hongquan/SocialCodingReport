@@ -1,24 +1,56 @@
 using Gtk 4.0;
 using Adw 1;
 
+menu primary_menu {
+  item {
+    label: _("Preferences");
+    action: "win.preferences";
+  }
+
+  item {
+    label: _("About");
+    action: "win.about";
+  }
+}
+
 template $MainWindow: Adw.ApplicationWindow {
   title: "Social Coding Report";
   default-width: 900;
   default-height: 600;
 
-  content: Adw.ViewStack view_stack {
-    Adw.ViewStackPage {
-      name: "report";
-      title: "Report";
+  content: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      [start]
+      Button btn_back {
+        icon-name: "go-previous-symbolic";
+        tooltip-text: "Back";
+        action-name: "win.back";
+        visible: false;
+      }
 
-      child: $ReportPage report_page {};
+      [end]
+      Gtk.MenuButton {
+        icon-name: "open-menu-symbolic";
+        tooltip-text: "Menu";
+        menu-model: primary_menu;
+      }
     }
 
-    Adw.ViewStackPage {
-      name: "preferences";
-      title: "Preferences";
+    content: Adw.ViewStack view_stack {
+      Adw.ViewStackPage {
+        name: "report";
+        title: "Report";
 
-      child: $PreferencesPage preferences_page {};
-    }
+        child: $ReportPage report_page {};
+      }
+
+      Adw.ViewStackPage {
+        name: "preferences";
+        title: "Preferences";
+
+        child: $PreferencesPage preferences_page {};
+      }
+    };
   };
 }

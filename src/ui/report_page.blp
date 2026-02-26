@@ -23,16 +23,6 @@ template $ReportPage: Adw.Bin {
   child: Adw.ToastOverlay toast_overlay {
     child: Adw.ToolbarView {
       [top]
-      Adw.HeaderBar {
-        [end]
-        Button {
-          icon-name: "emblem-system-symbolic";
-          tooltip-text: "Preferences";
-          action-name: "win.preferences";
-        }
-      }
-
-      [top]
       Gtk.Box {
         orientation: horizontal;
         spacing: 12;

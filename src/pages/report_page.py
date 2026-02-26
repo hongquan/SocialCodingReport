@@ -406,8 +406,6 @@ class ReportPage(Adw.Bin):
             if height > 0:
                 self.report_paned.set_position(int(height * 0.4))
 
-        self.add_toast('Report generated successfully.')
-
     @Gtk.Template.Callback()
     def on_copy(self, btn: Gtk.Button):
         if not self.current_report_html:

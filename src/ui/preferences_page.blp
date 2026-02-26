@@ -3,16 +3,6 @@ using Adw 1;
 
 template $PreferencesPage: Adw.Bin {
   child: Adw.ToolbarView {
-    [top]
-    Adw.HeaderBar {
-      [start]
-      Button {
-        icon-name: "go-previous-symbolic";
-        tooltip-text: "Back";
-        action-name: "win.back";
-      }
-    }
-
     content: Adw.PreferencesPage {
       Adw.PreferencesGroup {
         title: "GitHub Accounts";

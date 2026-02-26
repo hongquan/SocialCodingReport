@@ -29,6 +29,7 @@ python = import( 'python')
 conf = configuration_data()
 conf.set('PYTHON', python.find_installation('python3').full_path())
 conf.set('pkgdatadir', pkgdatadir)
+conf.set('version', meson.project_version())
 
 # Paths
 configure_file(
