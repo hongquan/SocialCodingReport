@@ -47,6 +47,7 @@ lines-after-imports = 2
 'src/window.py' = ["E402"]
 'src/pages/report_page.py' = ["E402"]
 'src/pages/preferences_page.py' = ["E402"]
+'src/pages/activity_table.py' = ["E402"]
 'src/github_client.py' = ["E402"]
 'src/main.py' = ["E402"]
 'src/logup.py' = ["E402"]

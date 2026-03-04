@@ -23,6 +23,7 @@ from ..github_client import GitHubClient
 from ..models import ActivityItem, GraphQLQueryContext, InvolvementActivity, RepoInfo, RepoItem, ReportActivity
 from ..reporting import generate_report
 from ..schemas import GHGraphQLConnection, GHGraphQLResponse, GHSearchIssue
+from .activity_table import ActivityTable
 
 
 log = Logger(__name__)
@@ -48,8 +49,8 @@ class ReportPage(Adw.Bin):
     today_activity_store: Gio.ListStore = Gtk.Template.Child()
     past_selection_model: Gtk.MultiSelection = Gtk.Template.Child()
     today_selection_model: Gtk.MultiSelection = Gtk.Template.Child()
-    past_activity_table: Gtk.ColumnView = Gtk.Template.Child()
-    today_activity_table: Gtk.ColumnView = Gtk.Template.Child()
+    past_activity_table: ActivityTable = Gtk.Template.Child()
+    today_activity_table: ActivityTable = Gtk.Template.Child()
     report_paned: Gtk.Paned = Gtk.Template.Child()
     view_stack: Adw.ViewStack = Gtk.Template.Child()
     report_preview: WebKit.WebView = Gtk.Template.Child()
@@ -82,6 +83,7 @@ class ReportPage(Adw.Bin):
         """Add a toast with optional timeout in seconds."""
         toast = Adw.Toast.new(message)
         toast.set_timeout(timeout)
+        self.toast_overlay.dismiss_all()
         self.toast_overlay.add_toast(toast)
 
     @Gtk.Template.Callback()

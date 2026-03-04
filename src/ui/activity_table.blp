@@ -1,0 +1,65 @@
+using Gtk 4.0;
+
+template $ActivityTable: Gtk.ColumnView {
+  Gtk.ColumnViewColumn {
+    factory: BuilderListItemFactory {
+      template ListItem {
+        child: Image {
+          icon-name: bind template.item as <$ActivityItem>.icon_name;
+        };
+      }
+    };
+  }
+
+  Gtk.ColumnViewColumn {
+    title: "Repo";
+
+    factory: BuilderListItemFactory {
+      template ListItem {
+        child: Label {
+          label: bind template.item as <$ActivityItem>.repo_name;
+        };
+      }
+    };
+  }
+
+  Gtk.ColumnViewColumn {
+    title: "Type";
+
+    factory: BuilderListItemFactory {
+      template ListItem {
+        child: Label {
+          label: bind template.item as <$ActivityItem>.type_char;
+        };
+      }
+    };
+  }
+
+  Gtk.ColumnViewColumn {
+    title: "Author";
+
+    factory: BuilderListItemFactory {
+      template ListItem {
+        child: Label {
+          label: bind template.item as <$ActivityItem>.author;
+        };
+      }
+    };
+  }
+
+  Gtk.ColumnViewColumn {
+    title: "Title";
+    expand: true;
+
+    factory: BuilderListItemFactory {
+      template ListItem {
+        child: Label {
+          label: bind template.item as <$ActivityItem>.display_title;
+          use-markup: false;
+          xalign: 0;
+          ellipsize: end;
+        };
+      }
+    };
+  }
+}

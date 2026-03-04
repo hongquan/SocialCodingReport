@@ -80,140 +80,16 @@ template $ReportPage: Adw.Bin {
               Adw.ViewStackPage {
                 name: "past";
 
-                child: Gtk.ColumnView past_activity_table {
+                child: $ActivityTable past_activity_table {
                   model: past_selection_model;
-
-                  Gtk.ColumnViewColumn {
-                    factory: BuilderListItemFactory {
-                      template ListItem {
-                        child: Image {
-                          icon-name: bind template.item as <$ActivityItem>.icon_name;
-                        };
-                      }
-                    };
-                  }
-
-                  Gtk.ColumnViewColumn {
-                    title: "Repo";
-
-                    factory: BuilderListItemFactory {
-                      template ListItem {
-                        child: Label {
-                          label: bind template.item as <$ActivityItem>.repo_name;
-                        };
-                      }
-                    };
-                  }
-
-                  Gtk.ColumnViewColumn {
-                    title: "Type";
-
-                    factory: BuilderListItemFactory {
-                      template ListItem {
-                        child: Label {
-                          label: bind template.item as <$ActivityItem>.type_char;
-                        };
-                      }
-                    };
-                  }
-
-                  Gtk.ColumnViewColumn {
-                    title: "Author";
-
-                    factory: BuilderListItemFactory {
-                      template ListItem {
-                        child: Label {
-                          label: bind template.item as <$ActivityItem>.author;
-                        };
-                      }
-                    };
-                  }
-
-                  Gtk.ColumnViewColumn {
-                    title: "Title";
-                    expand: true;
-
-                    factory: BuilderListItemFactory {
-                      template ListItem {
-                        child: Label {
-                          label: bind template.item as <$ActivityItem>.display_title;
-                          use-markup: false;
-                          xalign: 0;
-                          ellipsize: end;
-                        };
-                      }
-                    };
-                  }
                 };
               }
 
               Adw.ViewStackPage {
                 name: "today";
 
-                child: Gtk.ColumnView today_activity_table {
+                child: $ActivityTable today_activity_table {
                   model: today_selection_model;
-
-                  Gtk.ColumnViewColumn {
-                    factory: BuilderListItemFactory {
-                      template ListItem {
-                        child: Image {
-                          icon-name: bind template.item as <$ActivityItem>.icon_name;
-                        };
-                      }
-                    };
-                  }
-
-                  Gtk.ColumnViewColumn {
-                    title: "Repo";
-
-                    factory: BuilderListItemFactory {
-                      template ListItem {
-                        child: Label {
-                          label: bind template.item as <$ActivityItem>.repo_name;
-                        };
-                      }
-                    };
-                  }
-
-                  Gtk.ColumnViewColumn {
-                    title: "Type";
-
-                    factory: BuilderListItemFactory {
-                      template ListItem {
-                        child: Label {
-                          label: bind template.item as <$ActivityItem>.type_char;
-                        };
-                      }
-                    };
-                  }
-
-                  Gtk.ColumnViewColumn {
-                    title: "Author";
-
-                    factory: BuilderListItemFactory {
-                      template ListItem {
-                        child: Label {
-                          label: bind template.item as <$ActivityItem>.author;
-                        };
-                      }
-                    };
-                  }
-
-                  Gtk.ColumnViewColumn {
-                    title: "Title";
-                    expand: true;
-
-                    factory: BuilderListItemFactory {
-                      template ListItem {
-                        child: Label {
-                          label: bind template.item as <$ActivityItem>.display_title;
-                          use-markup: false;
-                          xalign: 0;
-                          ellipsize: end;
-                        };
-                      }
-                    };
-                  }
                 };
               }
             };
