@@ -47,12 +47,14 @@ class GitHubClient(GObject.Object):
         since_date: datetime,
         until_date: datetime,
         token: str | None = None,
+        page_url: str | None = None,
+        accumulated_items: list[InvolvementActivity] | None = None,
     ):
         """
         Fetch public events for a user.
         Emits 'user-activities-fetched' (username, activity_list, error_message)
         """
-        url = f'https://api.github.com/users/{quote(username)}/events'
+        url = page_url or f'https://api.github.com/users/{quote(username)}/events'
 
         msg = Soup.Message.new(HTTPMethod.GET, url)
         msg.get_request_headers().append('User-Agent', self.user_agent)
@@ -62,25 +64,31 @@ class GitHubClient(GObject.Object):
         if auth_token:
             msg.get_request_headers().append('Authorization', f'Bearer {auth_token}')
 
-        log.info('Fetching events for {} since {} until {}', username, since_date, until_date)
+        if page_url is None:
+            log.info('Fetching events for {} since {} until {}', username, since_date, until_date)
+
+        items = accumulated_items if accumulated_items is not None else []
         self.session.send_and_read_async(
             msg,
             GLib.PRIORITY_DEFAULT,
             None,
             self.on_events_fetching_done,
-            (username, since_date, until_date),
+            (username, since_date, until_date, token, items),
         )
 
     def on_events_fetching_done(
-        self, session: Soup.Session, result: Gio.AsyncResult, user_data: tuple[str, datetime, datetime]
+        self,
+        session: Soup.Session,
+        result: Gio.AsyncResult,
+        user_data: tuple[str, datetime, datetime, str | None, list[InvolvementActivity]],
     ):
-        username, since_date, until_date = user_data
+        username, since_date, until_date, token, items = user_data
         # Call `send_and_read_finish` first because it lets us know if there is a network error
         try:
             bytes_data = session.send_and_read_finish(result)
         except GLib.Error as e:
             log.error('Network error during fetch: {}', e)
-            self.emit('user-activities-fetched', username, [], str(e), False)
+            self.emit('user-activities-fetched', username, items, str(e), False)
             return
         msg = session.get_async_result_message(result)
         status_code = msg.get_status()
@@ -90,19 +98,21 @@ class GitHubClient(GObject.Object):
             if is_rate_limit:
                 error_msg = f'Rate Limit: {error_msg}'
             log.error(error_msg)
-            self.emit('user-activities-fetched', username, [], error_msg, is_rate_limit)
+            self.emit('user-activities-fetched', username, items, error_msg, is_rate_limit)
             return
 
         raw_data = bytes_data.get_data()
         gh_events = TypeAdapter(list[GHUserEvent]).validate_json(raw_data)
         log.info('Fetched {} events for {}', len(gh_events), username)
 
-        items = []
+        reached_older_than_since = False
+
         for gh_event in gh_events:
             if gh_event.created_at < since_date:
                 log.debug(
                     'Skipping event {} before since_date: {} < {}', gh_event.type, gh_event.created_at, since_date
                 )
+                reached_older_than_since = True
                 continue
             if gh_event.created_at > until_date:
                 log.debug('Skipping event {} after until_date: {} > {}', gh_event.type, gh_event.created_at, until_date)
@@ -114,6 +124,25 @@ class GitHubClient(GObject.Object):
                 case _:
                     # Ignore other event types
                     log.debug('Ignoring event type: {}', gh_event.type)
+
+        next_link = None
+        if not reached_older_than_since and len(gh_events) > 0:
+            # Ref: https://docs.github.com/en/rest/using-the-rest-api/using-pagination-in-the-rest-api?apiVersion=2022-11-28#using-link-headers
+            link_header = msg.get_response_headers().get_one('link')
+            if link_header:
+                import re
+
+                match = re.search(r'<([^>]+)>;\s*rel="next"', link_header)
+                if match:
+                    next_link = match.group(1)
+
+        if next_link:
+            log.info('Fetching next page of events for {}: {}', username, next_link)
+            self.fetch_user_events(
+                username, since_date, until_date, token=token, page_url=next_link, accumulated_items=items
+            )
+            return
+
         self.emit('user-activities-fetched', username, items, '', False)
         log.info('Processed {} involvement activities for {}', len(items), username)
 
