@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 
 import gi
 
@@ -7,7 +8,7 @@ import gi
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 gi.require_version('WebKit', '6.0')
-from gi.repository import Adw, Gio, GLib
+from gi.repository import Adw, Gio, GLib, WebKit
 from logbook import Logger
 
 from .consts import APP_ID
@@ -20,6 +21,8 @@ log = Logger(__name__)
 class SocialCodingReportApplication(Adw.Application):
     def __init__(self):
         super().__init__(application_id=APP_ID, flags=Gio.ApplicationFlags.FLAGS_NONE)
+        # Just a workaround to register `WebView` type early for GTKBuilder to recognize.
+        WebKit.WebView
 
     def define_shortcuts(self):
         action_quit = Gio.SimpleAction.new('quit', None)
@@ -45,7 +48,7 @@ class SocialCodingReportApplication(Adw.Application):
 
 def main() -> int:
     # Load GResource
-    resource_path = os.path.join(os.path.dirname(__file__), '..', 'socialcodingreport.gresource')
+    resource_path = Path(__file__).parent.parent / 'socialcodingreport.gresource'
     # When installed, it is in pkgdatadir.
     # We need to know where pkgdatadir is.
     # For now, let's try to locate it relative to this file?
@@ -58,7 +61,7 @@ def main() -> int:
     # Let's assume standard install layout.
 
     try:
-        resource = Gio.Resource.load(resource_path)
+        resource = Gio.Resource.load(str(resource_path))
         resource._register()
     except GLib.Error as e:
         log.warning('Failed to load resource from {}: {}', resource_path, e)
